@@ -8,9 +8,10 @@ An autonomous research agent for NBA moneyline markets on
 A statistical model sets every probability. The market price is treated as a
 strong prior. The default action is **no bet**.
 
-> **Status:** early development. The repo setup and the
-> [Phase 0 platform verification](docs/phase-0-verification.md) are done; the
-> data, model, and trading layers are next. Nothing here has traded real money.
+> **Status:** early development. Done so far: repo setup,
+> [Phase 0 platform verification](docs/phase-0-verification.md), and data
+> ingestion ([data sources](docs/data.md)). The model and trading layers are
+> next. Nothing here has traded real money.
 
 ## Why the LLM is kept away from the numbers
 
@@ -83,6 +84,17 @@ pip install -e ".[dev]"
 pre-commit install
 cp .env.example .env   # fill in locally; never commit
 pytest
+```
+
+Load data (see [docs/data.md](docs/data.md) for every source and its
+availability rule):
+
+```bash
+edgebot init-db
+edgebot ingest nba --season 2023-24 --season 2024-25 --season 2025-26
+edgebot ingest schedule --season 2026-27
+edgebot ingest injuries
+edgebot snapshot markets
 ```
 
 NBA stats endpoints block many datacenter IPs, so run ingestion from a home
