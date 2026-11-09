@@ -173,6 +173,28 @@ def cmd_train(args: argparse.Namespace, settings: Settings, store: Store) -> int
     return 0
 
 
+def cmd_report(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot import report
+
+    s = report.compute(store, mode=args.mode, starting_bankroll=settings.paper_bankroll)
+    text = report.to_text(s)
+    print(text)
+    if args.export:
+        out = Path(args.export)
+        plot = out.parent / "results_calibration.png"
+        has_plot = report.calibration_png(store, plot)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(report.to_markdown(s, plot.name if has_plot else None))
+        print(f"exported {out}")
+    if args.send:
+        if not settings.discord_webhook_url:
+            print("DISCORD_WEBHOOK_URL is not set; nothing sent")
+            return 1
+        report.send_discord(settings.discord_webhook_url.get(), text)
+        print("sent to Discord")
+    return 0
+
+
 KILL_FILE = Path("run") / "KILL"
 
 
@@ -209,6 +231,14 @@ def build_runner(settings: Settings, store: Store):
         odds = lambda: store.insert_odds_quotes(api.nba_moneylines())  # noqa: E731
     stats = NbaStats(settings.cache_dir / "nba_api")
     reports = InjuryReports()
+    daily_report = None
+    if settings.discord_webhook_url:
+        from edgebot import report
+
+        def daily_report() -> None:
+            s = report.compute(store, starting_bankroll=settings.paper_bankroll)
+            report.send_discord(settings.discord_webhook_url.get(), report.to_text(s))
+
     return Runner(
         store=store,
         model=load_model(model_path),
@@ -221,6 +251,7 @@ def build_runner(settings: Settings, store: Store):
         results=lambda: ingest_season(
             store, stats, season_for_date(utc_now().date()), refresh=True
         ),
+        daily_report=daily_report,
     )
 
 
@@ -348,6 +379,12 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--live", action="store_true", help="live trading (gated; see README)")
     run.add_argument("--confirm-live", action="store_true", help="required with --live")
     run.set_defaults(fn=cmd_run)
+
+    rep = sub.add_parser("report", help="P&L, CLV, calibration vs market, drawdown")
+    rep.add_argument("--mode", choices=["paper", "live"], default="paper")
+    rep.add_argument("--export", help="write sanitized markdown, e.g. docs/results.md")
+    rep.add_argument("--send", action="store_true", help="post to DISCORD_WEBHOOK_URL")
+    rep.set_defaults(fn=cmd_report)
 
     kill = sub.add_parser("kill", help="engage the kill switch (cancel orders, stop the loop)")
     kill.add_argument("--clear", action="store_true", help="disengage it")

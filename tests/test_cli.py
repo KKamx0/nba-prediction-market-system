@@ -127,3 +127,11 @@ def test_run_refuses_without_a_trained_model(env):
 def test_live_flag_is_refused_until_the_gate_exists(env, capsys):
     assert main(["run", "--live", "--confirm-live"]) == 2
     assert "paper mode only" in capsys.readouterr().out
+
+
+def test_report_prints_and_exports(env, capsys):
+    out = env / "docs" / "results.md"
+    assert main(["report", "--export", str(out)]) == 0
+    assert "Results so far" in out.read_text()
+    assert "edgebot paper report" in capsys.readouterr().out
+    assert main(["report", "--send"]) == 1  # no webhook configured
