@@ -76,6 +76,9 @@ flowchart LR
 
 ## Setup
 
+**Step-by-step: [docs/runbook.md](docs/runbook.md)** (install → keys → load
+history → backtest → `edgebot doctor` → run the loop through the season).
+
 Requires Python 3.12+.
 
 ```bash

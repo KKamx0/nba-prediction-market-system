@@ -196,6 +196,21 @@ def cmd_report(args: argparse.Namespace, settings: Settings, store: Store) -> in
     return 0
 
 
+def cmd_doctor(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    import httpx
+
+    from edgebot.doctor import data_checks, network_checks, render
+
+    checks = data_checks(store, settings)
+    if args.network:
+        with httpx.Client(timeout=15, follow_redirects=True) as c:
+            checks += network_checks(lambda url: c.get(url).status_code)
+    print(render(checks))
+    failed = [c for c in checks if c.level == "fail"]
+    print(f"\n{len(failed)} blocking problem(s)" if failed else "\nready for paper mode")
+    return 1 if failed else 0
+
+
 KILL_FILE = Path("run") / "KILL"
 
 
@@ -396,6 +411,10 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--live", action="store_true", help="live trading (gated; see README)")
     run.add_argument("--confirm-live", action="store_true", help="required with --live")
     run.set_defaults(fn=cmd_run)
+
+    doc = sub.add_parser("doctor", help="check data, model, keys, and connectivity")
+    doc.add_argument("--network", action="store_true", help="also probe the data sources")
+    doc.set_defaults(fn=cmd_doctor)
 
     rep = sub.add_parser("report", help="P&L, CLV, calibration vs market, drawdown")
     rep.add_argument("--mode", choices=["paper", "live"], default="paper")
