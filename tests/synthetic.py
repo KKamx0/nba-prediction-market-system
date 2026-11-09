@@ -6,6 +6,7 @@ the fitting code recovers them. Nothing here touches real data.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 
@@ -23,6 +24,7 @@ class League:
     true_def: dict[int, float]
     rosters: dict[str, list[int]]
     hca: float
+    true_p_home: dict[str, float]
 
 
 def make_league(
@@ -34,7 +36,13 @@ def make_league(
     start: date = date(2025, 10, 21),
     sd: float = 3.0,
     dnp_rate: float = 0.12,
+    game_seed: int | None = None,
+    id_prefix: str = "00225",
 ) -> League:
+    """``seed`` fixes the players' true ratings; ``game_seed`` the schedule and noise.
+
+    Same ``seed`` + different ``game_seed`` = the same league playing another season.
+    """
     rng = np.random.default_rng(seed)
     teams = sorted(TEAMS)
     rosters, true_off, true_def, base_min = {}, {}, {}, {}
@@ -50,12 +58,15 @@ def make_league(
             base_min[pid] = m
             pid += 1
 
+    if game_seed is not None:
+        rng = np.random.default_rng(game_seed)
     team_games, player_games = [], []
+    true_p_home: dict[str, float] = {}
     league_eff = 112.0
     for g in range(n_games):
         day = start + timedelta(days=g // 15)
         home, away = rng.choice(teams, 2, replace=False)
-        gid = f"00225{g:05d}"
+        gid = f"{id_prefix}{g:05d}"
         known = box_score_known_at(day)
         poss = float(rng.normal(99, 3))
         mins = {}
@@ -67,6 +78,18 @@ def make_league(
             m = np.array([base_min[p] for p in playing]) * rng.uniform(0.7, 1.3, len(playing))
             m = m / m.sum() * 240
             mins[t] = dict(zip(playing, m, strict=True))
+        mean_eff = {}
+        for off, deff in ((home, away), (away, home)):
+            mean_eff[off] = (
+                sum(m / 48 * true_off[p] for p, m in mins[off].items())
+                - sum(m / 48 * true_def[p] for p, m in mins[deff].items())
+                + (hca / 2 if off == home else -hca / 2)
+            )
+        margin_sd = noise * math.sqrt(2) * poss / 100
+        true_p_home[gid] = 0.5 * (
+            1
+            + math.erf((mean_eff[home] - mean_eff[away]) * poss / 100 / (margin_sd * math.sqrt(2)))
+        )
         for off, deff in ((home, away), (away, home)):
             eff = (
                 league_eff
@@ -101,7 +124,7 @@ def make_league(
                         "known_at": known,
                     }
                 )
-    return League(team_games, player_games, true_off, true_def, rosters, hca)
+    return League(team_games, player_games, true_off, true_def, rosters, hca, true_p_home)
 
 
 def as_of(rows: list[dict], cutoff: datetime) -> list[dict]:
@@ -111,9 +134,19 @@ def as_of(rows: list[dict], cutoff: datetime) -> list[dict]:
 EPOCH = datetime(2025, 10, 1, tzinfo=UTC)
 
 
-def load_into_store(store, league: League, season: str) -> None:  # noqa: ANN001
+def load_into_store(  # noqa: ANN001
+    store,
+    league: League,
+    season: str,
+    *,
+    with_odds: bool = True,
+    market_noise: float = 0.15,
+    odds_seed: int = 0,
+) -> None:
     """Write a synthetic league into a Store as if it had been ingested."""
-    from edgebot.timeutil import box_score_known_at
+    from datetime import time
+
+    from edgebot.timeutil import box_score_known_at, et_date_to_utc
 
     by_game: dict[str, list[dict]] = {}
     for r in league.team_games:
@@ -138,3 +171,27 @@ def load_into_store(store, league: League, season: str) -> None:  # noqa: ANN001
         {**r, "fga": 85, "fta": 20, "oreb": 10, "tov": 14} for r in league.team_games
     )
     store.upsert_player_games(league.player_games)
+    if with_odds:
+        rng = np.random.default_rng(odds_seed)
+        rows = []
+        for gid, rows_g in by_game.items():
+            home = next(r for r in rows_g if r["is_home"])
+            away = next(r for r in rows_g if not r["is_home"])
+            p = league.true_p_home[gid]
+            # sportsbook: true probability plus noise, then ~4.5% vig
+            lg = math.log(p / (1 - p)) + rng.normal(0, market_noise)
+            q = 1 / (1 + math.exp(-lg))
+            rows.append(
+                {
+                    "known_at": et_date_to_utc(date.fromisoformat(home["game_date"]), time(19, 0)),
+                    "source": "archive:synthetic",
+                    "bookmaker": "consensus",
+                    "kind": "closing",
+                    "game_date": home["game_date"],
+                    "home": home["team"],
+                    "away": away["team"],
+                    "home_dec": 1 / min(q * 1.045, 0.985),
+                    "away_dec": 1 / min((1 - q) * 1.045, 0.985),
+                }
+            )
+        store.insert_odds_quotes(rows)

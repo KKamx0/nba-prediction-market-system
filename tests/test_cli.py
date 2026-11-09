@@ -64,3 +64,30 @@ def test_api_key_never_reaches_logs(env, monkeypatch, caplog):
         with caplog.at_level(logging.DEBUG):
             assert main(["-v", "snapshot", "odds"]) == 0
     assert "placeholder-odds-value" not in caplog.text
+
+
+def test_backtest_and_train_end_to_end(env, capsys):
+    from datetime import date
+
+    from tests.synthetic import load_into_store, make_league
+
+    store = Store(env / "data" / "edge.db")
+    for i, season in enumerate(["2023-24", "2024-25", "2025-26"]):
+        league = make_league(
+            n_games=500, seed=21, game_seed=200 + i, id_prefix=f"0022{3 + i}",
+            start=date(2023 + i, 10, 22),
+        )  # fmt: skip
+        load_into_store(store, league, season, market_noise=0.5, odds_seed=i)
+    store.close()
+
+    out = env / "report"
+    rc = main(["backtest", "--validate", "2024-25", "--test", "2025-26", "--out", str(out)])
+    assert rc == 0
+    report = (out / "README.md").read_text()
+    assert "Selected model" in report and "2025-26" in report
+    assert "market-only baseline" in report
+    assert (out / "calibration.png").exists()
+
+    assert main(["train"]) == 0
+    assert (env / "models" / "game_model.pkl").exists()
+    assert "trained" in capsys.readouterr().out

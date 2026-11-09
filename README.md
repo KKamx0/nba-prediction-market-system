@@ -10,9 +10,9 @@ strong prior. The default action is **no bet**.
 
 > **Status:** early development. Done so far: repo setup,
 > [Phase 0 platform verification](docs/phase-0-verification.md), data
-> ingestion ([data sources](docs/data.md)), and player ratings plus minutes
-> projection. The game model, backtest, and trading layers are next. Nothing
-> here has traded real money.
+> ingestion ([data sources](docs/data.md)), player ratings and minutes
+> projection, and the game model with a walk-forward backtest and leakage
+> test. The trading layer is next. Nothing here has traded real money.
 
 ## Why the LLM is kept away from the numbers
 
@@ -147,12 +147,39 @@ market-only baseline, positive ROI after fees, and max drawdown under 15%.
 It also requires `LIVE_TRADING=true`, `JURISDICTION_CLEARED=true`, and the
 `--confirm-live` flag.
 
-## Backtest results
+## Backtest
 
-_Not yet run._ The backtest will be a strict walk-forward by date across
-multiple seasons, reported per season, and always compared with a
-market-only baseline. If the model can't beat that baseline on log loss, this
-section will say so.
+```bash
+edgebot backtest --validate 2023-24 --validate 2024-25 --test 2025-26
+edgebot train   # fit the selected model on all data for live use
+```
+
+- **Strict walk-forward by date.** Models are refit every 30 days on games
+  dated before the block they predict. Features are built as of 7pm ET on
+  game day, and games that tip earlier are skipped.
+- **Models:** the market-only baseline (calibrated sportsbook probability),
+  logistic regression, and LightGBM with the market as an offset, so the
+  trees can only learn corrections to it. Each is Platt- or
+  isotonic-calibrated on the newest 20% of its training window.
+- **Selection by log loss on validation seasons only.** Test seasons are
+  reported, never tuned on. Brier score and ECE are reported too; accuracy
+  is shown for context only.
+- **Leakage test (CI).** For games across a season, every row known after
+  the decision time is corrupted (results, box scores, late injury reports,
+  late odds), and the feature vector must not change. A deliberately leaky
+  feature proves the check has teeth, and a label-shuffle test confirms
+  skill collapses without real outcomes.
+
+**Results on real data: not yet run.** It needs NBA box scores and free
+archived closing lines loaded from a home connection (see
+[docs/data.md](docs/data.md)). The report and calibration plot land in
+[`docs/backtest/`](docs/backtest/).
+
+What synthetic tests already show: when the market is about as informed as
+a real sportsbook, the feature models shave little or nothing off its log
+loss, and the selector sometimes picks the market itself. The report then
+says plainly that no feature model beat the baseline. Expect the same on
+real data.
 
 ## Results so far
 
