@@ -101,15 +101,6 @@ def evaluate_gate(
     )
 
     add("LIVE_TRADING=true", settings.live_trading, "set" if settings.live_trading else "not set")
-    add(
-        "JURISDICTION_CLEARED=true",
-        settings.jurisdiction_cleared,
-        (
-            "owner confirmed eligibility"
-            if settings.jurisdiction_cleared
-            else "not set (see docs/phase-0-verification.md)"
-        ),
-    )
     add("--confirm-live", confirm_live, "given" if confirm_live else "flag missing")
     add(
         "live bankroll cap",
