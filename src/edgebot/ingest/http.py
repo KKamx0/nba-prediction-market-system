@@ -45,6 +45,19 @@ class JsonClient:
         self.last_headers: httpx.Headers = httpx.Headers()
 
     def get(self, path: str, params: dict[str, Any] | None = None) -> Any:
+        resp = self._request(path, params)
+        try:
+            return resp.json()
+        except ValueError as exc:
+            raise FetchError(f"GET {path} returned non-JSON") from exc
+
+    def get_bytes(self, path: str, params: dict[str, Any] | None = None) -> bytes:
+        return self._request(path, params).content
+
+    def get_text(self, path: str, params: dict[str, Any] | None = None) -> str:
+        return self._request(path, params).text
+
+    def _request(self, path: str, params: dict[str, Any] | None) -> httpx.Response:
         for attempt in range(self._max_retries + 1):
             self._bucket.acquire()
             try:
@@ -64,10 +77,7 @@ class JsonClient:
             if resp.status_code != 200:
                 # path only: query strings may carry API keys and must not be logged
                 raise FetchError(f"GET {path} -> HTTP {resp.status_code}")
-            try:
-                return resp.json()
-            except ValueError as exc:
-                raise FetchError(f"GET {path} returned non-JSON") from exc
+            return resp
         raise FetchError(f"GET {path} exhausted retries")  # pragma: no cover
 
     def close(self) -> None:
