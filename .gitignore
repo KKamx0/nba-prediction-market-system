@@ -1,0 +1,48 @@
+# --- secrets -----------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*_ed25519
+*.secret
+
+# --- local data, never committed -------------------------------------------
+# SQLite trade/snapshot DB, cached API responses, raw downloads
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
+cache/
+logs/
+models/*.pkl
+models/*.joblib
+models/*.txt
+# kill-switch flag and other runtime state
+run/
+
+# --- python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# --- tooling ----------------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.ipynb_checkpoints/
+
+# --- os / editors -----------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
