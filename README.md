@@ -5,7 +5,7 @@
 | Name                                   |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/edgebot/\_\_init\_\_.py            |        1 |        0 |        0 |        0 |    100% |           |
-| src/edgebot/cli.py                     |      267 |       55 |       34 |        7 |     76% |36-42, 46-50, 54-58, 87-97, 125, 132-133, 163-164, 193-194, 224-242, 264-272, 297-298, 420 |
+| src/edgebot/cli.py                     |      277 |       64 |       36 |        7 |     73% |37-43, 47-51, 55-59, 88-98, 126, 133-134, 164-165, 194-195, 225-258, 281-289, 314-315, 437 |
 | src/edgebot/config.py                  |       58 |        1 |       10 |        2 |     96% |58, 108-\>107 |
 | src/edgebot/db.py                      |       84 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/devig.py                   |       44 |        4 |       16 |        3 |     85% |29, 50-\>58, 67-69 |
@@ -18,16 +18,17 @@
 | src/edgebot/ingest/polymarket.py       |      115 |        4 |       30 |        5 |     94% |61, 80, 141, 154, 182-\>178 |
 | src/edgebot/model/\_\_init\_\_.py      |        0 |        0 |        0 |        0 |    100% |           |
 | src/edgebot/model/backtest.py          |      136 |        7 |       46 |        6 |     93% |56, 60-61, 70, 104, 106-111, 226-\>224 |
-| src/edgebot/model/features.py          |      115 |        1 |       16 |        1 |     98% |       122 |
+| src/edgebot/model/features.py          |      118 |        1 |       16 |        1 |     99% |       123 |
 | src/edgebot/model/game\_model.py       |       85 |        3 |       10 |        0 |     97% |   159-162 |
 | src/edgebot/model/metrics.py           |       31 |        0 |        6 |        0 |    100% |           |
-| src/edgebot/model/minutes.py           |      118 |        2 |       32 |        4 |     96% |105, 121-\>134, 130, 226-\>219 |
+| src/edgebot/model/minutes.py           |      120 |        2 |       32 |        4 |     96% |105, 121-\>134, 130, 231-\>224 |
 | src/edgebot/model/ratings.py           |       99 |        0 |       32 |        2 |     98% |88-\>87, 126-\>125 |
 | src/edgebot/model/strength.py          |       54 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/names.py                   |       14 |        0 |        2 |        0 |    100% |           |
+| src/edgebot/news.py                    |      166 |       10 |       42 |        4 |     93% |206-208, 238, 256, 336-340, 346 |
 | src/edgebot/ratelimit.py               |       26 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/report.py                  |      119 |       18 |       22 |        3 |     84% |81-\>78, 179-197, 226 |
-| src/edgebot/runner.py                  |      166 |       11 |       40 |        6 |     91% |194-\>206, 199-205, 222-\>226, 264, 275, 300, 308, 315 |
+| src/edgebot/runner.py                  |      178 |       11 |       42 |        6 |     91% |210-\>222, 215-221, 238-\>242, 280, 300, 325, 333, 340 |
 | src/edgebot/teams.py                   |       46 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/timeutil.py                |       22 |        0 |        2 |        0 |    100% |           |
 | src/edgebot/trading/\_\_init\_\_.py    |        0 |        0 |        0 |        0 |    100% |           |
@@ -39,7 +40,7 @@
 | src/edgebot/trading/settlement.py      |       27 |        1 |        8 |        1 |     94% |        18 |
 | src/edgebot/trading/sizing.py          |       18 |        1 |        4 |        1 |     91% |        29 |
 | src/edgebot/trading/state.py           |       18 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                              | **2466** |  **172** |  **534** |   **64** | **91%** |           |
+| **TOTAL**                              | **2659** |  **191** |  **580** |   **68** | **91%** |           |
 
 
 ## Setup coverage badge
