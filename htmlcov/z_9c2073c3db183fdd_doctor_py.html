@@ -64,10 +64,10 @@
         <p class="text">
             <a id="prevFileLink" class="nav" href="z_9c2073c3db183fdd_devig_py.html">&#xab; prev</a> &nbsp; &nbsp;
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
-            <a id="nextFileLink" class="nav" href="z_ae85f1528048b199_historical_odds_py.html">&#xbb; next</a>
+            <a id="nextFileLink" class="nav" href="z_9c2073c3db183fdd_gate_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.17.2">coverage.py v7.17.2</a>,
-            created at 2026-11-09 23:05 +0000
+            created at 2026-11-09 23:08 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -210,8 +210,8 @@
     <p class="run run2"><span class="n"><a id="t126" href="#t126">126</a></span><span class="t">            <span class="str">&quot;kill switch&quot;</span><span class="op">,</span> <span class="str">&quot;warn&quot;</span> <span class="key">if</span> <span class="nam">kill</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span> <span class="key">else</span> <span class="str">&quot;ok&quot;</span><span class="op">,</span> <span class="str">&quot;ENGAGED&quot;</span> <span class="key">if</span> <span class="nam">kill</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span> <span class="key">else</span> <span class="str">&quot;off&quot;</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t127" href="#t127">127</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t128" href="#t128">128</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t129" href="#t129">129</a></span><span class="t">    <span class="nam">state</span> <span class="op">=</span> <span class="nam">store</span><span class="op">.</span><span class="nam">query</span><span class="op">(</span><span class="str">&quot;SELECT state_json FROM risk_state WHERE id = 1&quot;</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t130" href="#t130">130</a></span><span class="t">    <span class="nam">shutdown</span> <span class="op">=</span> <span class="nam">bool</span><span class="op">(</span><span class="nam">state</span><span class="op">)</span> <span class="key">and</span> <span class="nam">json</span><span class="op">.</span><span class="nam">loads</span><span class="op">(</span><span class="nam">state</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">[</span><span class="str">&quot;state_json&quot;</span><span class="op">]</span><span class="op">)</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">&quot;shutdown&quot;</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t129" href="#t129">129</a></span><span class="t">    <span class="nam">states</span> <span class="op">=</span> <span class="nam">store</span><span class="op">.</span><span class="nam">query</span><span class="op">(</span><span class="str">&quot;SELECT state_json FROM risk_states&quot;</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t130" href="#t130">130</a></span><span class="t">    <span class="nam">shutdown</span> <span class="op">=</span> <span class="nam">any</span><span class="op">(</span><span class="nam">json</span><span class="op">.</span><span class="nam">loads</span><span class="op">(</span><span class="nam">r</span><span class="op">[</span><span class="str">&quot;state_json&quot;</span><span class="op">]</span><span class="op">)</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">&quot;shutdown&quot;</span><span class="op">)</span> <span class="key">for</span> <span class="nam">r</span> <span class="key">in</span> <span class="nam">states</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t131" href="#t131">131</a></span><span class="t">    <span class="nam">out</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t132" href="#t132">132</a></span><span class="t">        <span class="nam">Check</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t133" href="#t133">133</a></span><span class="t">            <span class="str">&quot;risk breakers&quot;</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -255,10 +255,10 @@
         <p>
             <a class="nav" href="z_9c2073c3db183fdd_devig_py.html">&#xab; prev</a> &nbsp; &nbsp;
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
-            <a class="nav" href="z_ae85f1528048b199_historical_odds_py.html">&#xbb; next</a>
+            <a class="nav" href="z_9c2073c3db183fdd_gate_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.17.2">coverage.py v7.17.2</a>,
-            created at 2026-11-09 23:05 +0000
+            created at 2026-11-09 23:08 +0000
         </p>
     </div>
 </footer>

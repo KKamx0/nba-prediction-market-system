@@ -6,10 +6,11 @@
 |--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/edgebot/\_\_init\_\_.py            |        1 |        0 |        0 |        0 |    100% |           |
 | src/edgebot/cli.py                     |      291 |       66 |       38 |        8 |     74% |37-43, 47-51, 55-59, 88-98, 126, 133-134, 164-165, 194-195, 206-207, 240-273, 296-304, 329-330, 456 |
-| src/edgebot/config.py                  |       58 |        1 |       10 |        2 |     96% |58, 108-\>107 |
+| src/edgebot/config.py                  |       60 |        1 |       10 |        2 |     96% |60, 112-\>111 |
 | src/edgebot/db.py                      |       84 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/devig.py                   |       44 |        4 |       16 |        3 |     85% |29, 50-\>58, 67-69 |
 | src/edgebot/doctor.py                  |       67 |        0 |        8 |        1 |     99% |   89-\>92 |
+| src/edgebot/gate.py                    |       50 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/ingest/\_\_init\_\_.py     |        0 |        0 |        0 |        0 |    100% |           |
 | src/edgebot/ingest/historical\_odds.py |      103 |       18 |       34 |        8 |     75% |71-75, 80, 97, 130, 134-135, 141, 156, 173, 177-182 |
 | src/edgebot/ingest/http.py             |       51 |        8 |        6 |        0 |     82% |55, 58, 65-69, 84 |
@@ -28,20 +29,20 @@
 | src/edgebot/names.py                   |       14 |        0 |        2 |        0 |    100% |           |
 | src/edgebot/news.py                    |      166 |       10 |       42 |        4 |     93% |206-208, 238, 256, 336-340, 346 |
 | src/edgebot/ratelimit.py               |       26 |        0 |        4 |        0 |    100% |           |
-| src/edgebot/report.py                  |      119 |       18 |       22 |        3 |     84% |81-\>78, 179-197, 226 |
-| src/edgebot/runner.py                  |      178 |       11 |       42 |        6 |     91% |210-\>222, 215-221, 238-\>242, 280, 300, 325, 333, 340 |
+| src/edgebot/report.py                  |      119 |       18 |       22 |        3 |     84% |81-\>78, 189-207, 236 |
+| src/edgebot/runner.py                  |      181 |       11 |       44 |        6 |     92% |210-\>222, 215-221, 242-\>251, 289, 309, 334, 342, 349 |
 | src/edgebot/teams.py                   |       46 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/timeutil.py                |       22 |        0 |        2 |        0 |    100% |           |
 | src/edgebot/trading/\_\_init\_\_.py    |        0 |        0 |        0 |        0 |    100% |           |
 | src/edgebot/trading/decision.py        |      100 |        8 |       30 |        6 |     89% |67, 109, 124, 159-\>165, 163-164, 166-168 |
 | src/edgebot/trading/edge.py            |       66 |        0 |       12 |        0 |    100% |           |
 | src/edgebot/trading/executor.py        |       64 |        0 |        4 |        0 |    100% |           |
-| src/edgebot/trading/live.py            |        4 |        0 |        0 |        0 |    100% |           |
+| src/edgebot/trading/live.py            |       91 |       17 |       18 |        1 |     78% |   146-174 |
 | src/edgebot/trading/risk.py            |      106 |        0 |       26 |        0 |    100% |           |
 | src/edgebot/trading/settlement.py      |       27 |        1 |        8 |        1 |     94% |        18 |
 | src/edgebot/trading/sizing.py          |       18 |        1 |        4 |        1 |     91% |        29 |
 | src/edgebot/trading/state.py           |       18 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                              | **2740** |  **193** |  **590** |   **70** | **91%** |           |
+| **TOTAL**                              | **2882** |  **210** |  **614** |   **71** | **91%** |           |
 
 
 ## Setup coverage badge
