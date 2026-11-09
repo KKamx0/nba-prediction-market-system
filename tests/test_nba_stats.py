@@ -20,6 +20,10 @@ TEAM_LOGS = pd.DataFrame(
         "TEAM_ABBREVIATION": ["LAL", "GSW", "BOS", "NYK"],
         "MATCHUP": ["LAL vs. GSW", "GSW @ LAL", "BOS vs. NYK", "NYK @ BOS"],
         "PTS": [112, 108, 100, 90],
+        "FGA": [88, 90, 80, 85],
+        "FTA": [25, 20, 10, 12],
+        "OREB": [10, 12, 8, 9],
+        "TOV": [13, 15, 14, 12],
     }
 )
 PLAYER_LOGS = pd.DataFrame(
@@ -113,3 +117,12 @@ def test_ingest_schedule_writes_tip_times(tmp_path, store):
     assert n == 1
     (row,) = store.query("SELECT * FROM games")
     assert row["tip_utc"].startswith("2026-11-10T00:00:00")
+
+
+def test_team_rows_estimate_possessions(store, tmp_path):
+    ingest_season(store, NbaStats(tmp_path, fetcher=FakeFetcher()), "2026-27")
+    rows = {r["team"]: r for r in store.team_games_as_of(datetime(2027, 1, 1, tzinfo=UTC))}
+    assert set(rows) == {"LAL", "GSW"}
+    assert rows["LAL"]["poss"] == pytest.approx(88 + 0.44 * 25 - 10 + 13)
+    assert rows["LAL"]["opp"] == "GSW" and rows["LAL"]["is_home"] == 1
+    assert store.team_games_as_of(datetime(2026, 10, 22, 7, 59, tzinfo=UTC)) == []

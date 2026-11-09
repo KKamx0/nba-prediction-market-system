@@ -132,6 +132,39 @@ def games_from_team_logs(team_logs: pd.DataFrame, season: str) -> list[dict[str,
     return out
 
 
+def possessions(fga: float, fta: float, oreb: float, tov: float) -> float:
+    """Standard single-team possession estimate."""
+    return fga + 0.44 * fta - oreb + tov
+
+
+def team_rows(team_logs: pd.DataFrame, games: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Per-team box totals for games already paired by ``games_from_team_logs``."""
+    by_id = {g["game_id"]: g for g in games}
+    out = []
+    for rec in team_logs.to_dict("records"):
+        game_id = str(rec["GAME_ID"]).zfill(10)
+        g = by_id.get(game_id)
+        if g is None:
+            continue
+        team = resolve(rec["TEAM_ABBREVIATION"])
+        out.append(
+            {
+                "game_id": game_id,
+                "team": team,
+                "opp": g["away"] if team == g["home"] else g["home"],
+                "is_home": team == g["home"],
+                "pts": int(rec["PTS"]),
+                "fga": int(rec["FGA"]),
+                "fta": int(rec["FTA"]),
+                "oreb": int(rec["OREB"]),
+                "tov": int(rec["TOV"]),
+                "poss": possessions(rec["FGA"], rec["FTA"], rec["OREB"], rec["TOV"]),
+                "known_at": g["known_at"],
+            }
+        )
+    return out
+
+
 def player_rows(player_logs: pd.DataFrame) -> list[dict[str, Any]]:
     out = []
     for rec in player_logs.to_dict("records"):
@@ -186,6 +219,7 @@ def ingest_season(
                 away_pts=g["away_pts"],
                 known_at=g["known_at"],
             )
+        store.upsert_team_games(team_rows(teams, games))
         known_ids = {g["game_id"] for g in games}
         players = [
             r
