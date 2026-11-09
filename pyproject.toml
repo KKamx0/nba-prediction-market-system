@@ -20,6 +20,9 @@ dependencies = [
     "python-dotenv==1.2.4",
 ]
 
+[project.scripts]
+edgebot = "edgebot.cli:main"
+
 [project.optional-dependencies]
 dev = [
     "black==26.10.1",

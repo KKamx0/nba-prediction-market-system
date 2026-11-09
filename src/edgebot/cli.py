@@ -1,0 +1,179 @@
+"""edgebot command line.
+
+edgebot init-db
+edgebot ingest nba --season 2024-25 --season 2025-26
+edgebot ingest schedule --season 2026-27
+edgebot ingest injuries
+edgebot ingest odds-history FILE --layout wide --source kaggle --home-col ...
+edgebot snapshot markets [--hours 36]
+edgebot snapshot odds
+"""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import sys
+from collections.abc import Callable, Sequence
+from datetime import timedelta
+
+from edgebot.config import Settings, install_log_redaction
+from edgebot.db import Store
+from edgebot.timeutil import utc_now
+
+log = logging.getLogger("edgebot")
+
+Handler = Callable[[argparse.Namespace, Settings, Store], int]
+
+
+def cmd_init_db(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    print(f"database ready at {settings.db_path} (schema v{store.schema_version()})")
+    return 0
+
+
+def cmd_ingest_nba(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.ingest.nba_stats import NbaStats, ingest_season
+
+    stats = NbaStats(settings.cache_dir / "nba_api")
+    for season in args.season:
+        counts = ingest_season(store, stats, season, refresh=args.refresh)
+        print(f"{season}: {counts['games']} games, {counts['player_games']} player lines")
+    return 0
+
+
+def cmd_ingest_schedule(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.ingest.nba_stats import NbaStats, ingest_schedule
+
+    n = ingest_schedule(store, NbaStats(settings.cache_dir / "nba_api"), args.season)
+    print(f"{args.season}: {n} scheduled games")
+    return 0
+
+
+def cmd_ingest_injuries(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.ingest.injuries import InjuryReports, ingest_new_reports
+
+    n = ingest_new_reports(store, InjuryReports(listing_url=args.listing_url))
+    print(f"{n} new injury report rows")
+    return 0
+
+
+def cmd_ingest_odds_history(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.ingest.historical_odds import ColumnMap, load_file
+
+    cmap = ColumnMap(
+        date=args.date_col,
+        home=args.home_col,
+        away=args.away_col,
+        home_odds=args.home_odds_col,
+        away_odds=args.away_odds_col,
+        odds_format=args.odds_format,
+        date_format=args.date_format,
+    )
+    rep = load_file(
+        args.file,
+        layout=args.layout,
+        source=args.source,
+        cmap=cmap,
+        season_start_year=args.season_start_year,
+        max_reject_rate=args.max_reject_rate,
+    )
+    n = store.insert_odds_quotes(rep.rows)
+    print(f"{n} closing lines imported, {sum(rep.rejected.values())} rejected {dict(rep.rejected)}")
+    return 0
+
+
+def cmd_snapshot_markets(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.ingest.polymarket import PolymarketPublic, snapshot_to_store
+
+    pm = PolymarketPublic()
+    now = utc_now()
+    upcoming = [
+        m for m in pm.nba_moneylines() if now < m.start_utc <= now + timedelta(hours=args.hours)
+    ]
+    for ml in upcoming:
+        snapshot_to_store(store, ml, pm.book(ml.market_slug))
+    print(f"snapshotted {len(upcoming)} NBA moneyline books")
+    return 0
+
+
+def cmd_snapshot_odds(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.ingest.odds_api import OddsApi
+
+    api = OddsApi(settings.odds_api_key.get())
+    n = store.insert_odds_quotes(api.nba_moneylines())
+    print(f"{n} sportsbook quotes stored ({api.remaining} API credits left)")
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="edgebot", description=__doc__.split("\n\n")[0])
+    p.add_argument("-v", "--verbose", action="store_true")
+    sub = p.add_subparsers(dest="command", required=True)
+
+    sub.add_parser("init-db", help="create or migrate the database").set_defaults(fn=cmd_init_db)
+
+    ingest = sub.add_parser("ingest", help="load data into the database")
+    isub = ingest.add_subparsers(dest="source", required=True)
+
+    nba = isub.add_parser("nba", help="box scores and player minutes via nba_api")
+    nba.add_argument("--season", action="append", required=True, help="e.g. 2025-26 (repeatable)")
+    nba.add_argument("--refresh", action="store_true", help="ignore the local cache")
+    nba.set_defaults(fn=cmd_ingest_nba)
+
+    sched = isub.add_parser("schedule", help="season schedule with tip times")
+    sched.add_argument("--season", required=True)
+    sched.set_defaults(fn=cmd_ingest_schedule)
+
+    inj = isub.add_parser("injuries", help="new official injury reports")
+    from edgebot.ingest.injuries import LISTING_URL
+
+    inj.add_argument("--listing-url", default=LISTING_URL)
+    inj.set_defaults(fn=cmd_ingest_injuries)
+
+    oh = isub.add_parser("odds-history", help="import free archived closing lines (CSV)")
+    oh.add_argument("file")
+    oh.add_argument("--layout", choices=["wide", "sbr"], required=True)
+    oh.add_argument("--source", required=True, help="short name stored with each row")
+    oh.add_argument("--season-start-year", type=int, help="sbr layout: e.g. 2019 for 2019-20")
+    oh.add_argument("--date-col", default="date")
+    oh.add_argument("--home-col", default="home")
+    oh.add_argument("--away-col", default="away")
+    oh.add_argument("--home-odds-col", default="home_ml")
+    oh.add_argument("--away-odds-col", default="away_ml")
+    oh.add_argument("--odds-format", choices=["american", "decimal"], default="american")
+    oh.add_argument("--date-format", help="strptime pattern if dates aren't ISO")
+    oh.add_argument("--max-reject-rate", type=float, default=0.05)
+    oh.set_defaults(fn=cmd_ingest_odds_history)
+
+    snap = sub.add_parser("snapshot", help="capture live prices")
+    ssub = snap.add_subparsers(dest="what", required=True)
+    sm = ssub.add_parser("markets", help="Polymarket US NBA moneyline order books")
+    sm.add_argument("--hours", type=float, default=36, help="only games tipping within N hours")
+    sm.set_defaults(fn=cmd_snapshot_markets)
+    ssub.add_parser("odds", help="sportsbook moneylines (The Odds API)").set_defaults(
+        fn=cmd_snapshot_odds
+    )
+    return p
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    settings = Settings.from_env()
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else settings.log_level,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    # httpx logs full request URLs at INFO, and some APIs take keys in the query
+    # string. Keep those lines out of the logs entirely; redaction is the backstop.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    install_log_redaction(settings)
+    store = Store(settings.db_path)
+    try:
+        return args.fn(args, settings, store)
+    finally:
+        store.close()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
