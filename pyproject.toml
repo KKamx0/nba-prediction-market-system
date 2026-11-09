@@ -11,6 +11,8 @@ requires-python = ">=3.12"
 authors = [{ name = "Kamsochi Ekwueme" }]
 # Runtime dependencies are added (and pinned) by the phase that needs them.
 dependencies = [
+    "anthropic==2.7.0",
+    "feedparser==6.0.14",
     "httpx==0.28.1",
     "lightgbm==4.7.0",
     "matplotlib==3.11.2",
