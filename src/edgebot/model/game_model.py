@@ -143,3 +143,20 @@ def default_models() -> dict[str, callable]:
         "lightgbm+platt": lambda: Calibrated(LGBMModel(), "platt"),
         "lightgbm+isotonic": lambda: Calibrated(LGBMModel(), "isotonic"),
     }
+
+
+def save_model(model, path) -> None:  # noqa: ANN001
+    """Pickle a fitted model. Only ever load files this program wrote itself."""
+    import pickle
+    from pathlib import Path
+
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "wb") as fh:
+        pickle.dump(model, fh)
+
+
+def load_model(path):  # noqa: ANN001, ANN201
+    import pickle
+
+    with open(path, "rb") as fh:
+        return pickle.load(fh)  # noqa: S301 - local file written by save_model

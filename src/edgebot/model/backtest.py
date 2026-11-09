@@ -215,7 +215,13 @@ def report_markdown(
             f"| {s.ece:.4f} | {s.accuracy:.3f} |"
         )
     lines.append("")
-    for season in test:
+    if selected == "market":
+        lines.append(
+            "- **No feature model beat the market-only baseline on validation**, so the "
+            "baseline itself was selected. The model adds nothing over the market here; any "
+            "edge edgebot finds would come only from Polymarket pricing away from sportsbooks."
+        )
+    for season in test if selected != "market" else []:
         by = {s.model: s for s in scores if s.season == season}
         if selected in by and "market" in by:
             d = by["market"].log_loss - by[selected].log_loss

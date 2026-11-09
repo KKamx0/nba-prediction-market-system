@@ -130,3 +130,15 @@ def test_walk_forward_skips_seasons_without_markets():
         }
     )
     assert walk_forward(df, ["2025-26"], FAST_MODELS).empty
+
+
+def test_report_when_the_market_itself_wins_validation():
+    from edgebot.model.backtest import SeasonScore
+
+    scores = [
+        SeasonScore("2025-26", "market", 100, 0.60, 0.2, 0.02, 0.6),
+        SeasonScore("2025-26", "logistic+platt", 100, 0.62, 0.21, 0.03, 0.6),
+    ]
+    md = report_markdown(scores, "market", ["2024-25"], ["2025-26"])
+    assert "No feature model beat the market-only baseline" in md
+    assert "-0.0000" not in md
