@@ -187,3 +187,16 @@ def test_predict_scenarios_moves_with_strength():
     )  # fmt: skip
     p, play, sit = predict_scenarios(Linear(), f)
     assert sit < p < play
+
+
+def test_results_pulled_once_per_day_after_box_scores_are_known(env):
+    _, runner, clock, _ = env
+    calls = []
+    runner.results = lambda: calls.append(clock["now"]) or 0
+    clock["now"] = datetime(2025, 12, 6, 7, 0, tzinfo=UTC)
+    runner.cycle()
+    assert calls == []  # before 09:00 UTC
+    clock["now"] = datetime(2025, 12, 6, 9, 30, tzinfo=UTC)
+    runner.cycle()
+    runner.cycle()
+    assert len(calls) == 1

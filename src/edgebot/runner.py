@@ -93,12 +93,14 @@ class Runner:
         polymarket,  # noqa: ANN001 - PolymarketPublic-like
         injuries: Callable[[], int] | None = None,
         odds: Callable[[], int] | None = None,
+        results: Callable[[], object] | None = None,
         config: RunnerConfig | None = None,
         clock: Callable[[], datetime] = utc_now,
     ) -> None:
         self.store, self.model, self.model_name = store, model, model_name
         self.executor, self.risk, self.pm = executor, risk, polymarket
-        self.injuries, self.odds = injuries, odds
+        self.injuries, self.odds, self.results = injuries, odds, results
+        self._results_day = None
         self.cfg = config or RunnerConfig()
         self.clock = clock
         self.builder = FeatureBuilder(store)
@@ -238,6 +240,11 @@ class Runner:
             if self._et_day is not None:
                 self.risk.new_day(now=now)
             self._et_day = today
+
+        # box scores are treated as known at 08:00 UTC; pull them once a day after that
+        results_due = self.results is not None and now.hour >= 9 and self._results_day != now.date()
+        if results_due and self._safe("results", self.results, report) is not None:
+            self._results_day = now.date()
 
         def on_settle(row: dict) -> None:
             self.risk.record_settlement(cost=row["cost"] + row["fees"], pnl=row["pnl"], now=now)
