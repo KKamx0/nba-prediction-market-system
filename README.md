@@ -9,9 +9,10 @@ A statistical model sets every probability. The market price is treated as a
 strong prior. The default action is **no bet**.
 
 > **Status:** early development. Done so far: repo setup,
-> [Phase 0 platform verification](docs/phase-0-verification.md), and data
-> ingestion ([data sources](docs/data.md)). The model and trading layers are
-> next. Nothing here has traded real money.
+> [Phase 0 platform verification](docs/phase-0-verification.md), data
+> ingestion ([data sources](docs/data.md)), and player ratings plus minutes
+> projection. The game model, backtest, and trading layers are next. Nothing
+> here has traded real money.
 
 ## Why the LLM is kept away from the numbers
 
@@ -99,6 +100,23 @@ edgebot snapshot markets
 
 NBA stats endpoints block many datacenter IPs, so run ingestion from a home
 connection.
+
+## How team strength is built
+
+1. **Player ratings** (`model/ratings.py`): offensive and defensive impact
+   per 100 possessions from a ridge regression on game-level efficiency,
+   weighted by each player's share of minutes. The ridge pulls toward last
+   season's rating × 0.75, so the prior fades as current-season minutes
+   accumulate. On synthetic leagues, one season recovers individual player
+   value at ~0.5 correlation and team strength at > 0.85. Individual ratings
+   are noisy; the team aggregate is what the model uses.
+2. **Minutes** (`model/minutes.py`): a blend of last game, rolling averages
+   and season average, trimmed on back-to-backs. Injury status sets a
+   probability of playing, and freed minutes go to teammates in proportion to
+   their role, capped at 42.
+3. **Tonight's strength** (`model/strength.py`): Σ (minutes / 48) × net
+   rating, computed for the expected lineup, the "every questionable player
+   plays" and "every questionable player sits" cases, and full health.
 
 ## Paper mode
 
