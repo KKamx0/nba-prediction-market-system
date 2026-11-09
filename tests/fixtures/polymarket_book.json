@@ -1,0 +1,52 @@
+{
+ "marketData": {
+  "marketSlug": "aec-nba-lal-atl-2026-11-09",
+  "bids": [
+   {
+    "px": {
+     "value": "0.4700",
+     "currency": "USD"
+    },
+    "qty": "1500.00"
+   },
+   {
+    "px": {
+     "value": "0.4600",
+     "currency": "USD"
+    },
+    "qty": "800.00"
+   }
+  ],
+  "offers": [
+   {
+    "px": {
+     "value": "0.4800",
+     "currency": "USD"
+    },
+    "qty": "1200.00"
+   },
+   {
+    "px": {
+     "value": "0.4900",
+     "currency": "USD"
+    },
+    "qty": "600.00"
+   },
+   {
+    "px": {
+     "value": "0.5100",
+     "currency": "USD"
+    },
+    "qty": "300.00"
+   }
+  ],
+  "state": "MARKET_STATE_OPEN",
+  "stats": {
+   "lastTradePx": {
+    "value": "0.4800",
+    "currency": "USD"
+   }
+  },
+  "transactTime": "2026-11-09T21:28:18Z"
+ }
+}
