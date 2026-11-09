@@ -61,7 +61,9 @@ def make_league(
         mins = {}
         for t in (home, away):
             # injuries/rest: each player misses a game with probability dnp_rate
-            playing = [p for p in rosters[t] if rng.random() > dnp_rate] or rosters[t]
+            playing = [p for p in rosters[t] if rng.random() > dnp_rate]
+            if len(playing) < 8:  # teams always dress enough players
+                playing = rosters[t]
             m = np.array([base_min[p] for p in playing]) * rng.uniform(0.7, 1.3, len(playing))
             m = m / m.sum() * 240
             mins[t] = dict(zip(playing, m, strict=True))
@@ -107,3 +109,32 @@ def as_of(rows: list[dict], cutoff: datetime) -> list[dict]:
 
 
 EPOCH = datetime(2025, 10, 1, tzinfo=UTC)
+
+
+def load_into_store(store, league: League, season: str) -> None:  # noqa: ANN001
+    """Write a synthetic league into a Store as if it had been ingested."""
+    from edgebot.timeutil import box_score_known_at
+
+    by_game: dict[str, list[dict]] = {}
+    for r in league.team_games:
+        by_game.setdefault(r["game_id"], []).append(r)
+    for gid, rows in by_game.items():
+        home = next(r for r in rows if r["is_home"])
+        away = next(r for r in rows if not r["is_home"])
+        day = date.fromisoformat(home["game_date"])
+        store.upsert_game(
+            game_id=gid,
+            season=season,
+            game_date=home["game_date"],
+            home=home["team"],
+            away=away["team"],
+            known_at=box_score_known_at(day) - timedelta(days=60),
+        )
+        if home["pts"] != away["pts"]:
+            store.upsert_result(
+                game_id=gid, home_pts=home["pts"], away_pts=away["pts"], known_at=home["known_at"]
+            )
+    store.upsert_team_games(
+        {**r, "fga": 85, "fta": 20, "oreb": 10, "tov": 14} for r in league.team_games
+    )
+    store.upsert_player_games(league.player_games)

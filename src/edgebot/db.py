@@ -376,6 +376,16 @@ class Store:
             (to_iso(as_of),),
         )
 
+    def player_lines_as_of(self, as_of: datetime) -> list[sqlite3.Row]:
+        """Box-score lines known at ``as_of``, with each game's date and season."""
+        return self.query(
+            """
+            SELECT pg.*, g.game_date, g.season FROM player_games pg JOIN games g USING (game_id)
+            WHERE pg.known_at <= ? ORDER BY g.game_date, pg.game_id
+            """,
+            (to_iso(as_of),),
+        )
+
     def results_as_of(self, as_of: datetime) -> list[sqlite3.Row]:
         return self.query(
             """
