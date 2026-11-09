@@ -51,6 +51,8 @@ class Settings:
     live_trading: bool = False
     jurisdiction_cleared: bool = False
     paper_bankroll: float = 1000.0
+    live_bankroll_cap: float = 0.0  # max dollars live trading may use; 0 = live disabled
+    live_allow_short: bool = False  # short-side live orders need a manual price-convention check
 
     @classmethod
     def from_env(cls, dotenv_path: str | Path | None = ".env") -> Settings:
@@ -69,6 +71,8 @@ class Settings:
             live_trading=_flag("LIVE_TRADING"),
             jurisdiction_cleared=_flag("JURISDICTION_CLEARED"),
             paper_bankroll=float(env("PAPER_BANKROLL", "1000")),
+            live_bankroll_cap=float(env("LIVE_BANKROLL_CAP", "0")),
+            live_allow_short=_flag("LIVE_ALLOW_SHORT"),
         )
 
     def secrets(self) -> list[str]:
