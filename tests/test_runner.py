@@ -200,3 +200,15 @@ def test_results_pulled_once_per_day_after_box_scores_are_known(env):
     runner.cycle()
     runner.cycle()
     assert len(calls) == 1
+
+
+def test_daily_report_sent_once_after_settlement_window(env):
+    _, runner, clock, _ = env
+    sent = []
+    runner.daily_report = lambda: sent.append(clock["now"]) or True
+    clock["now"] = datetime(2025, 12, 6, 14, 0, tzinfo=UTC)
+    runner.cycle()
+    clock["now"] = datetime(2025, 12, 6, 15, 30, tzinfo=UTC)
+    runner.cycle()
+    runner.cycle()
+    assert len(sent) == 1

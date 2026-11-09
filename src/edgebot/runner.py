@@ -94,6 +94,7 @@ class Runner:
         injuries: Callable[[], int] | None = None,
         odds: Callable[[], int] | None = None,
         results: Callable[[], object] | None = None,
+        daily_report: Callable[[], object] | None = None,
         config: RunnerConfig | None = None,
         clock: Callable[[], datetime] = utc_now,
     ) -> None:
@@ -101,6 +102,8 @@ class Runner:
         self.executor, self.risk, self.pm = executor, risk, polymarket
         self.injuries, self.odds, self.results = injuries, odds, results
         self._results_day = None
+        self.daily_report = daily_report
+        self._report_day = None
         self.cfg = config or RunnerConfig()
         self.clock = clock
         self.builder = FeatureBuilder(store)
@@ -285,6 +288,13 @@ class Runner:
             )
             report.evaluated += 1
             report.bets += int(d is not None and d.action == "bet")
+
+        # once a day, after the morning settlement (15:00 UTC = 10/11am ET)
+        report_due = (
+            self.daily_report is not None and now.hour >= 15 and self._report_day != now.date()
+        )
+        if report_due and self._safe("daily report", self.daily_report, report) is not None:
+            self._report_day = now.date()
 
         if self.risk.state.shutdown and not was_shutdown:
             log_risk_event(self.store, "shutdown", self.risk.state.shutdown_reason, now)
