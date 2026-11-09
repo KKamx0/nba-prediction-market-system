@@ -27,7 +27,7 @@ from urllib.parse import urljoin
 from edgebot.ingest.http import JsonClient
 from edgebot.names import last_first_to_full
 from edgebot.teams import TEAMS
-from edgebot.timeutil import et_date_to_utc, parse_iso
+from edgebot.timeutil import et_date_to_utc, parse_iso, utc_now
 
 log = logging.getLogger(__name__)
 
@@ -154,15 +154,25 @@ class InjuryReports:
 
 
 def ingest_new_reports(
-    store, reports: InjuryReports, since: datetime | None = None
-) -> int:  # noqa: ANN001
-    """Fetch every listed report newer than ``since`` (default: newest stored)."""
+    store,  # noqa: ANN001
+    reports: InjuryReports,
+    since: datetime | None = None,
+    *,
+    now: datetime | None = None,
+    backfill: timedelta = timedelta(hours=36),
+) -> int:
+    """Fetch listed reports newer than ``since``.
+
+    By default ``since`` is the newest stored report, or ``now - backfill`` on an
+    empty database, so a first run doesn't download a whole season of PDFs.
+    Pass an explicit ``since`` to backfill history deliberately.
+    """
     if since is None:
         latest = store.query("SELECT MAX(known_at) AS t FROM injury_reports")[0]["t"]
-        since = parse_iso(latest) - PUBLISH_LAG if latest else None
+        since = parse_iso(latest) - PUBLISH_LAG if latest else (now or utc_now()) - backfill
     inserted = 0
     for ts, url in reports.links():
-        if since is not None and ts <= since:
+        if ts <= since:
             continue
         inserted += store.insert_injury_rows(reports.fetch(url, ts).rows)
     return inserted

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -103,10 +103,10 @@ class FakeReports:
 
 def test_ingest_only_fetches_new_reports(store):
     fake = FakeReports()
-    assert ingest_new_reports(store, fake) == 12
+    assert ingest_new_reports(store, fake, now=REPORT_TIME + timedelta(hours=1)) == 12
     assert fake.fetched == ["a", "b"]
     fake.fetched.clear()
-    assert ingest_new_reports(store, fake) == 0
+    assert ingest_new_reports(store, fake, now=REPORT_TIME + timedelta(hours=1)) == 0
     assert fake.fetched == []  # nothing newer than what is stored
 
 
@@ -128,3 +128,12 @@ def test_name_key_matches_across_sources():
     assert name_key("Shai Gilgeous-Alexander") == "shai gilgeous alexander"
     assert name_key("Young, Trae") == name_key("Trae Young")
     assert name_key("Jackson Jr., Jaren") == name_key("Jaren Jackson Jr.")
+
+
+def test_first_run_only_backfills_recent_reports(store):
+    fake = FakeReports()
+    # 'a' is 3.5h older than 'b'; with a 2h backfill window only 'b' is fetched
+    ingest_new_reports(
+        store, fake, now=REPORT_TIME + timedelta(minutes=30), backfill=timedelta(hours=2)
+    )
+    assert fake.fetched == ["b"]
