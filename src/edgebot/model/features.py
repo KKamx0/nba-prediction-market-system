@@ -100,14 +100,14 @@ def logit(p: float) -> float:
 class FeatureBuilder:
     """Builds features for many games, caching the expensive per-day fits."""
 
-    def __init__(self, store, minutes_model: MinutesModel | None = None) -> None:  # noqa: ANN001
+    def __init__(self, store, minutes_model: MinutesModel | None = None) -> None:
         self.store = store
         self.book = RatingsBook(store)
         self.minutes_model = minutes_model or MinutesModel()
         self._cache_key: tuple[date, datetime] | None = None
         self._ctx: tuple | None = None
 
-    def _context(self, game_day: date, as_of: datetime):  # noqa: ANN202
+    def _context(self, game_day: date, as_of: datetime):
         key = (game_day, as_of)
         if self._cache_key != key:
             ratings = self.book.as_of(as_of, game_day)

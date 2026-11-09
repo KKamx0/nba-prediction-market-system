@@ -106,7 +106,7 @@ class Calibrated:
     Rows must be in chronological order.
     """
 
-    def __init__(self, base, method: str = "platt", frac: float = 0.2) -> None:  # noqa: ANN001
+    def __init__(self, base, method: str = "platt", frac: float = 0.2) -> None:
         if method not in ("platt", "isotonic"):
             raise ValueError("method must be 'platt' or 'isotonic'")
         self.base, self.method, self.frac = base, method, frac
@@ -145,7 +145,7 @@ def default_models() -> dict[str, callable]:
     }
 
 
-def save_model(model, path) -> None:  # noqa: ANN001
+def save_model(model, path) -> None:
     """Pickle a fitted model. Only ever load files this program wrote itself."""
     import pickle
     from pathlib import Path
@@ -155,7 +155,7 @@ def save_model(model, path) -> None:  # noqa: ANN001
         pickle.dump(model, fh)
 
 
-def load_model(path):  # noqa: ANN001, ANN201
+def load_model(path):
     import pickle
 
     with open(path, "rb") as fh:

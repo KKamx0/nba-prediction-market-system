@@ -158,6 +158,90 @@ MIGRATIONS: list[str] = [
     );
     CREATE INDEX predictions_game ON predictions (game_date, home, away, as_of);
     """,
+    # 4: trading log. Every decision is recorded, including passes and why.
+    """
+    CREATE TABLE decisions (
+        id            INTEGER PRIMARY KEY,
+        known_at      TEXT NOT NULL,
+        game_date     TEXT NOT NULL,
+        home          TEXT NOT NULL,
+        away          TEXT NOT NULL,
+        market_slug   TEXT,
+        model         TEXT,
+        action        TEXT NOT NULL CHECK (action IN ('bet', 'pass', 'review')),
+        side_team     TEXT,
+        p_model       REAL,
+        p_play        REAL,
+        p_sit         REAL,
+        p_market_pm   REAL,                     -- Polymarket mid for the side
+        p_market_sb   REAL,                     -- sportsbook consensus for the side
+        edge          REAL,
+        all_in_price  REAL,
+        contracts     REAL,
+        stake         REAL,
+        reasons_json  TEXT NOT NULL
+    );
+    CREATE INDEX decisions_game ON decisions (game_date, home, away, known_at);
+
+    CREATE TABLE orders (
+        id                 INTEGER PRIMARY KEY,
+        known_at           TEXT NOT NULL,
+        decision_id        INTEGER REFERENCES decisions (id),
+        mode               TEXT NOT NULL CHECK (mode IN ('paper', 'live')),
+        market_slug        TEXT NOT NULL,
+        side_team          TEXT NOT NULL,
+        long_side          INTEGER NOT NULL,
+        qty                REAL NOT NULL CHECK (qty > 0),
+        limit_price        REAL NOT NULL CHECK (limit_price > 0 AND limit_price < 1),
+        status             TEXT NOT NULL,
+        exchange_order_id  TEXT
+    );
+
+    CREATE TABLE fills (
+        id        INTEGER PRIMARY KEY,
+        order_id  INTEGER NOT NULL REFERENCES orders (id),
+        known_at  TEXT NOT NULL,
+        price     REAL NOT NULL CHECK (price > 0 AND price < 1),
+        qty       REAL NOT NULL CHECK (qty > 0),
+        fee       REAL NOT NULL CHECK (fee >= 0)
+    );
+
+    CREATE TABLE positions (
+        id             INTEGER PRIMARY KEY,
+        order_id       INTEGER NOT NULL REFERENCES orders (id),
+        mode           TEXT NOT NULL,
+        market_slug    TEXT NOT NULL,
+        game_date      TEXT NOT NULL,
+        home           TEXT NOT NULL,
+        away           TEXT NOT NULL,
+        side_team      TEXT NOT NULL,
+        long_side      INTEGER NOT NULL,
+        tip_utc        TEXT,
+        qty            REAL NOT NULL,
+        cost           REAL NOT NULL,           -- contracts x price, excluding fees
+        fees           REAL NOT NULL,
+        opened_at      TEXT NOT NULL,
+        closing_price  REAL,                    -- side mid in the last snapshot before tip
+        settled_at     TEXT,
+        won            INTEGER,
+        payout         REAL,
+        pnl            REAL
+    );
+    CREATE INDEX positions_open ON positions (settled_at);
+
+    CREATE TABLE risk_state (
+        id          INTEGER PRIMARY KEY CHECK (id = 1),
+        state_json  TEXT NOT NULL,
+        updated_at  TEXT NOT NULL
+    );
+
+    CREATE TABLE risk_events (
+        id        INTEGER PRIMARY KEY,
+        known_at  TEXT NOT NULL,
+        kind      TEXT NOT NULL,
+        detail    TEXT NOT NULL
+    );
+    """,
 ]
 
 

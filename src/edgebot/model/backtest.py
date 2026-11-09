@@ -36,7 +36,7 @@ DECISION_TIME_ET = time(19, 0)
 
 
 def build_dataset(
-    store,  # noqa: ANN001
+    store,
     seasons: Iterable[str] | None = None,
     progress: Callable[[str], None] | None = None,
 ) -> pd.DataFrame:
