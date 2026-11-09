@@ -270,6 +270,17 @@ MIGRATIONS: list[str] = [
     );
     CREATE INDEX news_extractions_team ON news_extractions (team, known_at);
     """,
+    # 6: separate risk state per mode, so a live drawdown never mixes with paper P&L
+    """
+    CREATE TABLE risk_states (
+        mode        TEXT PRIMARY KEY CHECK (mode IN ('paper', 'live')),
+        state_json  TEXT NOT NULL,
+        updated_at  TEXT NOT NULL
+    );
+    INSERT INTO risk_states (mode, state_json, updated_at)
+        SELECT 'paper', state_json, updated_at FROM risk_state;
+    DROP TABLE risk_state;
+    """,
 ]
 
 

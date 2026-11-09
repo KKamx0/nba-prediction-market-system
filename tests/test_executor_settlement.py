@@ -126,3 +126,35 @@ def test_risk_state_roundtrip_including_shutdown(store):
     assert loaded == s
     log_risk_event(store, "shutdown", "drawdown 25%", NOW)
     assert store.query("SELECT kind FROM risk_events")[0]["kind"] == "shutdown"
+
+
+def test_upgrade_keeps_existing_paper_risk_state_and_separates_live(tmp_path):
+    import json
+    import sqlite3
+
+    from edgebot.db import MIGRATIONS, Store
+
+    path = tmp_path / "old.db"
+    conn = sqlite3.connect(path)
+    conn.execute("CREATE TABLE schema_version (version INTEGER NOT NULL)")
+    for v, sql in enumerate(MIGRATIONS[:5], start=1):
+        conn.executescript(sql)
+        conn.execute("INSERT INTO schema_version VALUES (?)", (v,))
+    old = {"bankroll": 900, "peak": 1000, "day_start": 950, "open_exposure": 0,
+           "games_with_positions": [], "markets_traded": [], "halted_until": None,
+           "shutdown": True, "shutdown_reason": "dd"}  # fmt: skip
+    conn.execute(
+        "INSERT INTO risk_state VALUES (1, ?, '2026-01-01T00:00:00.000000+00:00')",
+        (json.dumps(old),),
+    )
+    conn.commit()
+    conn.close()
+
+    store = Store(path)
+    paper = load_risk_state(store, 123.0)
+    assert paper.bankroll == 900 and paper.shutdown
+    live = load_risk_state(store, 250.0, mode="live")
+    assert live.bankroll == 250.0 and not live.shutdown
+    save_risk_state(store, live, NOW, mode="live")
+    assert load_risk_state(store, 0, mode="paper").bankroll == 900
+    store.close()

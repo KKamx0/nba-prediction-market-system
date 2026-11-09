@@ -13,8 +13,8 @@ from edgebot.timeutil import parse_iso, to_iso, utc_now
 from edgebot.trading.risk import RiskState
 
 
-def load_risk_state(store, initial_bankroll: float) -> RiskState:
-    rows = store.query("SELECT state_json FROM risk_state WHERE id = 1")
+def load_risk_state(store, initial_bankroll: float, mode: str = "paper") -> RiskState:
+    rows = store.query("SELECT state_json FROM risk_states WHERE mode = ?", (mode,))
     if not rows:
         return RiskState(
             bankroll=initial_bankroll, peak=initial_bankroll, day_start=initial_bankroll
@@ -33,7 +33,9 @@ def load_risk_state(store, initial_bankroll: float) -> RiskState:
     )
 
 
-def save_risk_state(store, state: RiskState, now: datetime | None = None) -> None:
+def save_risk_state(
+    store, state: RiskState, now: datetime | None = None, mode: str = "paper"
+) -> None:
     d = {
         "bankroll": state.bankroll,
         "peak": state.peak,
@@ -48,11 +50,11 @@ def save_risk_state(store, state: RiskState, now: datetime | None = None) -> Non
     with store.conn:
         store.conn.execute(
             """
-            INSERT INTO risk_state (id, state_json, updated_at) VALUES (1, ?, ?)
-            ON CONFLICT (id) DO UPDATE SET state_json = excluded.state_json,
-                                           updated_at = excluded.updated_at
+            INSERT INTO risk_states (mode, state_json, updated_at) VALUES (?, ?, ?)
+            ON CONFLICT (mode) DO UPDATE SET state_json = excluded.state_json,
+                                             updated_at = excluded.updated_at
             """,
-            (json.dumps(d), to_iso(now or utc_now())),
+            (mode, json.dumps(d), to_iso(now or utc_now())),
         )
 
 
