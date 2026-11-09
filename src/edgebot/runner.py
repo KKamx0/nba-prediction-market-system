@@ -239,6 +239,15 @@ class Runner:
                 self.risk.record_fill(
                     game_key=key, market_slug=ml.market_slug, cost=res.cost + res.fees
                 )
+            elif res.status == "unknown":
+                # we can't tell whether it filled: assume it did, so exposure and the
+                # one-position-per-game rule stay conservative until reconciled
+                self.risk.record_fill(
+                    game_key=key, market_slug=ml.market_slug, cost=d.contracts * d.quote.worst_price
+                )
+                log_risk_event(
+                    self.store, "order_unknown", f"{key}: reconcile order {res.order_id}", now
+                )
             log.info("%s %s: %s (%s)", key, d.side_team, res.status, d.reasons[0])
         return d
 
@@ -249,7 +258,7 @@ class Runner:
         if self.risk.killed():
             n = self.executor.cancel_all()
             log_risk_event(self.store, "kill_switch", f"cancelled {n} open orders; stopping", now)
-            save_risk_state(self.store, self.risk.state, now)
+            save_risk_state(self.store, self.risk.state, now, mode=self.executor.mode)
             raise KillSwitchError("kill switch engaged")
 
         today = now.astimezone(ET).date()
@@ -323,7 +332,7 @@ class Runner:
 
         if self.risk.state.shutdown and not was_shutdown:
             log_risk_event(self.store, "shutdown", self.risk.state.shutdown_reason, now)
-        save_risk_state(self.store, self.risk.state, now)
+        save_risk_state(self.store, self.risk.state, now, mode=self.executor.mode)
         return report
 
     def run(self, interval_s: float, sleep: Callable[[float], None] = time.sleep) -> None:

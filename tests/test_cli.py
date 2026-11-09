@@ -124,9 +124,11 @@ def test_run_refuses_without_a_trained_model(env):
         main(["run", "--once"])
 
 
-def test_live_flag_is_refused_until_the_gate_exists(env, capsys):
-    assert main(["run", "--live", "--confirm-live"]) == 2
-    assert "paper mode only" in capsys.readouterr().out
+def test_live_is_blocked_by_the_gate_on_a_fresh_install(env, capsys):
+    assert main(["run", "--live", "--confirm-live"]) == 3
+    out = capsys.readouterr().out
+    assert "live trading: BLOCKED" in out
+    assert "[FAIL] paper bets" in out and "[FAIL] JURISDICTION_CLEARED=true" in out
 
 
 def test_report_prints_and_exports(env, capsys):

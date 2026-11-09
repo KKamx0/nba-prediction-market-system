@@ -221,8 +221,8 @@ def _risk_engine(settings: Settings, store: Store):
     return RiskEngine(RiskLimits(), load_risk_state(store, settings.paper_bankroll), KILL_FILE)
 
 
-def build_runner(settings: Settings, store: Store):
-    """Wire the paper trading loop from settings. Live wiring lives in trading/live.py."""
+def build_runner(settings: Settings, store: Store, *, executor=None, risk=None):  # noqa: ANN001
+    """Wire the trading loop. Paper by default; trading/live.py passes a LiveExecutor."""
     import json
 
     from edgebot.ingest.injuries import InjuryReports, ingest_new_reports
@@ -274,8 +274,8 @@ def build_runner(settings: Settings, store: Store):
         store=store,
         model=load_model(model_path),
         model_name=model_name,
-        executor=PaperExecutor(store, pm.book, theta=0.095),
-        risk=_risk_engine(settings, store),
+        executor=executor or PaperExecutor(store, pm.book, theta=0.095),
+        risk=risk or _risk_engine(settings, store),
         polymarket=pm,
         injuries=lambda: ingest_new_reports(store, reports),
         odds=odds,
