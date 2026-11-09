@@ -25,7 +25,7 @@ def _prev_season(season: str) -> str:
 
 
 class RatingsBook:
-    def __init__(self, store, config: RatingConfig | None = None) -> None:  # noqa: ANN001
+    def __init__(self, store, config: RatingConfig | None = None) -> None:
         self.store = store
         self.config = config or RatingConfig()
         self._season_end: dict[str, PlayerRatings | None] = {}
@@ -34,7 +34,7 @@ class RatingsBook:
 
     _FAR_FUTURE = "9999-12-31T00:00:00.000000+00:00"
 
-    def _rows(self, season: str, as_of: datetime | None):  # noqa: ANN202
+    def _rows(self, season: str, as_of: datetime | None):
         cutoff = to_iso(as_of) if as_of is not None else self._FAR_FUTURE
         tg = self.store.query(
             """
@@ -86,9 +86,7 @@ class TeamTonight:
     minutes: TeamMinutes
 
 
-def statuses_for(
-    store, team: str, game_day: date, as_of: datetime
-) -> dict[str, str]:  # noqa: ANN001
+def statuses_for(store, team: str, game_day: date, as_of: datetime) -> dict[str, str]:
     """Latest injury status per player, from reports about tonight's game."""
     return {
         r["player_name"]: r["status"]
@@ -100,7 +98,7 @@ def statuses_for(
 def team_tonight(
     team: str,
     ratings: PlayerRatings,
-    roster,  # noqa: ANN001 - mapping pid -> (name, MinutesFeatures)
+    roster,
     statuses: Mapping[str, str],
     *,
     back_to_back: bool = False,
@@ -125,5 +123,5 @@ def team_tonight(
     )
 
 
-def rosters_as_of(store, game_day: date, as_of: datetime):  # noqa: ANN001, ANN201
+def rosters_as_of(store, game_day: date, as_of: datetime):
     return build_rosters(store.player_lines_as_of(as_of), game_day)

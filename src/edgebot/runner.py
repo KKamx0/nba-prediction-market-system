@@ -58,7 +58,7 @@ class RunnerConfig:
     sizing: SizingConfig = field(default_factory=SizingConfig)
 
 
-def predict_scenarios(model, f: GameFeatures) -> tuple[float, float, float]:  # noqa: ANN001
+def predict_scenarios(model, f: GameFeatures) -> tuple[float, float, float]:
     """Model probability for expected availability, everyone-plays, everyone-sits."""
     rows = []
     for diff in (f.strength_diff, f.strength_diff_play, f.strength_diff_sit):
@@ -85,12 +85,12 @@ class Runner:
     def __init__(
         self,
         *,
-        store,  # noqa: ANN001
-        model,  # noqa: ANN001
+        store,
+        model,
         model_name: str,
         executor: Executor,
         risk: RiskEngine,
-        polymarket,  # noqa: ANN001 - PolymarketPublic-like
+        polymarket,
         injuries: Callable[[], int] | None = None,
         odds: Callable[[], int] | None = None,
         results: Callable[[], object] | None = None,
@@ -109,7 +109,7 @@ class Runner:
         self._et_day = None
 
     # -- helpers -----------------------------------------------------------
-    def _safe(self, label: str, fn: Callable, report: CycleReport):  # noqa: ANN202
+    def _safe(self, label: str, fn: Callable, report: CycleReport):
         try:
             return fn()
         except Exception as exc:  # noqa: BLE001 - one bad source must not stop the loop
@@ -117,9 +117,7 @@ class Runner:
             report.errors.append(f"{label}: {exc}")
             return None
 
-    def _record_decision(
-        self, ml: Moneyline, d: Decision, now: datetime, **extra
-    ) -> int:  # noqa: ANN003
+    def _record_decision(self, ml: Moneyline, d: Decision, now: datetime, **extra) -> int:
         q = d.quote
         with self.store.conn:
             cur = self.store.conn.execute(

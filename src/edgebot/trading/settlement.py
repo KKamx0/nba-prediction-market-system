@@ -13,9 +13,7 @@ from datetime import datetime
 from edgebot.timeutil import parse_iso, to_iso
 
 
-def closing_mid(
-    store, market_slug: str, long_side: bool, tip_utc: str | None
-) -> float | None:  # noqa: ANN001
+def closing_mid(store, market_slug: str, long_side: bool, tip_utc: str | None) -> float | None:
     if tip_utc is None:
         return None
     snap = store.latest_market_snapshot_as_of(market_slug, parse_iso(tip_utc))
@@ -25,7 +23,7 @@ def closing_mid(
     return mid if long_side else 1 - mid
 
 
-def settle_positions(store, now: datetime, on_settle=None) -> list[dict]:  # noqa: ANN001
+def settle_positions(store, now: datetime, on_settle=None) -> list[dict]:
     """Settle every open position whose game has a known result at ``now``."""
     open_rows = store.query(
         """

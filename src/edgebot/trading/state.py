@@ -13,7 +13,7 @@ from edgebot.timeutil import parse_iso, to_iso, utc_now
 from edgebot.trading.risk import RiskState
 
 
-def load_risk_state(store, initial_bankroll: float) -> RiskState:  # noqa: ANN001
+def load_risk_state(store, initial_bankroll: float) -> RiskState:
     rows = store.query("SELECT state_json FROM risk_state WHERE id = 1")
     if not rows:
         return RiskState(
@@ -33,7 +33,7 @@ def load_risk_state(store, initial_bankroll: float) -> RiskState:  # noqa: ANN00
     )
 
 
-def save_risk_state(store, state: RiskState, now: datetime | None = None) -> None:  # noqa: ANN001
+def save_risk_state(store, state: RiskState, now: datetime | None = None) -> None:
     d = {
         "bankroll": state.bankroll,
         "peak": state.peak,
@@ -56,9 +56,7 @@ def save_risk_state(store, state: RiskState, now: datetime | None = None) -> Non
         )
 
 
-def log_risk_event(
-    store, kind: str, detail: str, now: datetime | None = None
-) -> None:  # noqa: ANN001
+def log_risk_event(store, kind: str, detail: str, now: datetime | None = None) -> None:
     with store.conn:
         store.conn.execute(
             "INSERT INTO risk_events (known_at, kind, detail) VALUES (?, ?, ?)",

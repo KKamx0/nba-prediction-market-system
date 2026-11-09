@@ -187,7 +187,7 @@ class PolymarketPublic:
         return parse_book(self._client.get(f"/v1/markets/{market_slug}/book"))
 
 
-def snapshot_to_store(store, ml: Moneyline, book: OrderBook) -> None:  # noqa: ANN001
+def snapshot_to_store(store, ml: Moneyline, book: OrderBook) -> None:
     store.insert_market_snapshot(
         known_at=book.fetched_at,
         market_slug=ml.market_slug,
@@ -203,7 +203,7 @@ def snapshot_to_store(store, ml: Moneyline, book: OrderBook) -> None:  # noqa: A
     )
 
 
-def book_from_snapshot(row) -> OrderBook:  # noqa: ANN001
+def book_from_snapshot(row) -> OrderBook:
     """Rebuild a validated OrderBook from a stored market_snapshots row."""
     return OrderBook(
         market_slug=row["market_slug"],

@@ -27,7 +27,7 @@ class EdgeConfig:
     slippage: float = 0.005  # buffer for the book moving between quote and fill
 
 
-def _levels(levels) -> list[tuple[float, float]]:  # noqa: ANN001
+def _levels(levels) -> list[tuple[float, float]]:
     out = []
     for lv in levels:
         price, qty = (lv.price, lv.qty) if hasattr(lv, "price") else lv
@@ -36,7 +36,7 @@ def _levels(levels) -> list[tuple[float, float]]:  # noqa: ANN001
 
 
 def walk_book(
-    levels, qty: float, limit_price: float | None = None  # noqa: ANN001
+    levels, qty: float, limit_price: float | None = None
 ) -> tuple[float, float | None, list[tuple[float, float]]]:
     """Fill up to ``qty`` against best-first ask levels, never above ``limit_price``."""
     remaining, fills = qty, []
@@ -86,7 +86,7 @@ class EdgeQuote:
 
 
 def quote_side(
-    p_win: float, asks, qty: float, theta: float, cfg: EdgeConfig | None = None  # noqa: ANN001
+    p_win: float, asks, qty: float, theta: float, cfg: EdgeConfig | None = None
 ) -> EdgeQuote | None:
     """Edge for buying ``qty`` contracts now. None if the book can't fill it."""
     cfg = cfg or EdgeConfig()
@@ -104,9 +104,7 @@ def quote_side(
     )
 
 
-def max_qty_with_edge(
-    p_win: float, asks, theta: float, cfg: EdgeConfig | None = None
-) -> float:  # noqa: ANN001
+def max_qty_with_edge(p_win: float, asks, theta: float, cfg: EdgeConfig | None = None) -> float:
     """Contracts available at levels whose own all-in price still clears ``min_edge``."""
     cfg = cfg or EdgeConfig()
     total = 0.0

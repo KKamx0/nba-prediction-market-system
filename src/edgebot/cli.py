@@ -176,14 +176,14 @@ def cmd_train(args: argparse.Namespace, settings: Settings, store: Store) -> int
 KILL_FILE = Path("run") / "KILL"
 
 
-def _risk_engine(settings: Settings, store: Store):  # noqa: ANN202
+def _risk_engine(settings: Settings, store: Store):
     from edgebot.trading.risk import RiskEngine, RiskLimits
     from edgebot.trading.state import load_risk_state
 
     return RiskEngine(RiskLimits(), load_risk_state(store, settings.paper_bankroll), KILL_FILE)
 
 
-def build_runner(settings: Settings, store: Store):  # noqa: ANN201
+def build_runner(settings: Settings, store: Store):
     """Wire the paper trading loop from settings. Live wiring lives in trading/live.py."""
     import json
 

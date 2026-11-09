@@ -190,7 +190,7 @@ def player_rows(player_logs: pd.DataFrame) -> list[dict[str, Any]]:
 
 
 def ingest_season(
-    store,  # noqa: ANN001 - edgebot.db.Store
+    store,
     stats: NbaStats,
     season: str,
     *,
@@ -258,9 +258,7 @@ def schedule_rows(schedule: pd.DataFrame, season: str, now: datetime) -> list[di
     return out
 
 
-def ingest_schedule(
-    store, stats: NbaStats, season: str, *, refresh: bool = True
-) -> int:  # noqa: ANN001
+def ingest_schedule(store, stats: NbaStats, season: str, *, refresh: bool = True) -> int:
     rows = schedule_rows(stats.schedule(season, refresh), season, utc_now())
     for r in rows:
         store.upsert_game(**r)

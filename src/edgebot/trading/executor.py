@@ -61,7 +61,7 @@ class Executor(ABC):
 
 def record_execution(
     store, mode: str, req: OrderRequest, result_status: str, fills, now, exchange_id=None
-) -> ExecutionResult:  # noqa: ANN001, E501
+) -> ExecutionResult:  # noqa: E501
     """Write order, fills and (if anything filled) a position. Shared by both executors."""
     with store.conn:
         cur = store.conn.execute(
@@ -124,7 +124,7 @@ class PaperExecutor(Executor):
 
     def __init__(
         self,
-        store,  # noqa: ANN001
+        store,
         book_source: Callable[[str], OrderBook],
         theta: float,
         clock: Callable[[], datetime] = utc_now,

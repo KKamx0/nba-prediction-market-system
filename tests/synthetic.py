@@ -134,7 +134,7 @@ def as_of(rows: list[dict], cutoff: datetime) -> list[dict]:
 EPOCH = datetime(2025, 10, 1, tzinfo=UTC)
 
 
-def load_into_store(  # noqa: ANN001
+def load_into_store(
     store,
     league: League,
     season: str,

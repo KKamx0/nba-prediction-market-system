@@ -154,7 +154,7 @@ class InjuryReports:
 
 
 def ingest_new_reports(
-    store,  # noqa: ANN001
+    store,
     reports: InjuryReports,
     since: datetime | None = None,
     *,
