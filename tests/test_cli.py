@@ -135,3 +135,8 @@ def test_report_prints_and_exports(env, capsys):
     assert "Results so far" in out.read_text()
     assert "edgebot paper report" in capsys.readouterr().out
     assert main(["report", "--send"]) == 1  # no webhook configured
+
+
+def test_doctor_exits_nonzero_until_ready(env, capsys):
+    assert main(["doctor"]) == 1
+    assert "blocking problem" in capsys.readouterr().out
