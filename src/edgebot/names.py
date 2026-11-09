@@ -25,5 +25,5 @@ def name_key(name: str) -> str:
     """Canonical matching key; accepts 'First Last' or 'Last, First'."""
     name = last_first_to_full(name)
     ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
-    tokens = re.sub(r"[^a-z ]", "", ascii_name.lower().replace("-", " ")).split()
+    tokens = re.sub(r"[^a-z0-9 ]", "", ascii_name.lower().replace("-", " ")).split()
     return " ".join(t for t in tokens if t not in _SUFFIXES)

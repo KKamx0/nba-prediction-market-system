@@ -128,6 +128,7 @@ def test_name_key_matches_across_sources():
     assert name_key("Shai Gilgeous-Alexander") == "shai gilgeous alexander"
     assert name_key("Young, Trae") == name_key("Trae Young")
     assert name_key("Jackson Jr., Jaren") == name_key("Jaren Jackson Jr.")
+    assert name_key("Player 21") != name_key("Player 22")
 
 
 def test_first_run_only_backfills_recent_reports(store):
