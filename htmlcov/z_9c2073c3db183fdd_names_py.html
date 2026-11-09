@@ -55,19 +55,19 @@
             </div>
         </aside>
         <h2>
-            <span class="text">13 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">13<span class="text"> run</span></button>
+            <span class="text">14 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">14<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">0<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">0<span class="text"> partial</span></button>
         </h2>
         <p class="text">
-            <a id="prevFileLink" class="nav" href="z_ae85f1528048b199_polymarket_py.html">&#xab; prev</a> &nbsp; &nbsp;
+            <a id="prevFileLink" class="nav" href="z_bab21ab150f3385f_strength_py.html">&#xab; prev</a> &nbsp; &nbsp;
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_9c2073c3db183fdd_ratelimit_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.17.2">coverage.py v7.17.2</a>,
-            created at 2026-11-09 22:17 +0000
+            created at 2026-11-09 22:31 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -106,19 +106,21 @@
     <p class="pln"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t23" href="#t23">23</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t24" href="#t24">24</a></span><span class="t"><span class="key">def</span> <span class="nam">name_key</span><span class="op">(</span><span class="nam">name</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="nam">str</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t">    <span class="nam">ascii_name</span> <span class="op">=</span> <span class="nam">unicodedata</span><span class="op">.</span><span class="nam">normalize</span><span class="op">(</span><span class="str">&quot;NFKD&quot;</span><span class="op">,</span> <span class="nam">name</span><span class="op">)</span><span class="op">.</span><span class="nam">encode</span><span class="op">(</span><span class="str">&quot;ascii&quot;</span><span class="op">,</span> <span class="str">&quot;ignore&quot;</span><span class="op">)</span><span class="op">.</span><span class="nam">decode</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t26" href="#t26">26</a></span><span class="t">    <span class="nam">tokens</span> <span class="op">=</span> <span class="nam">re</span><span class="op">.</span><span class="nam">sub</span><span class="op">(</span><span class="str">r&quot;[^a-z ]&quot;</span><span class="op">,</span> <span class="str">&quot;&quot;</span><span class="op">,</span> <span class="nam">ascii_name</span><span class="op">.</span><span class="nam">lower</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">replace</span><span class="op">(</span><span class="str">&quot;-&quot;</span><span class="op">,</span> <span class="str">&quot; &quot;</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t27" href="#t27">27</a></span><span class="t">    <span class="key">return</span> <span class="str">&quot; &quot;</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">t</span> <span class="key">for</span> <span class="nam">t</span> <span class="key">in</span> <span class="nam">tokens</span> <span class="key">if</span> <span class="nam">t</span> <span class="key">not</span> <span class="key">in</span> <span class="nam">_SUFFIXES</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t">    <span class="str">&quot;&quot;&quot;Canonical matching key; accepts &#x27;First Last&#x27; or &#x27;Last, First&#x27;.&quot;&quot;&quot;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t26" href="#t26">26</a></span><span class="t">    <span class="nam">name</span> <span class="op">=</span> <span class="nam">last_first_to_full</span><span class="op">(</span><span class="nam">name</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t27" href="#t27">27</a></span><span class="t">    <span class="nam">ascii_name</span> <span class="op">=</span> <span class="nam">unicodedata</span><span class="op">.</span><span class="nam">normalize</span><span class="op">(</span><span class="str">&quot;NFKD&quot;</span><span class="op">,</span> <span class="nam">name</span><span class="op">)</span><span class="op">.</span><span class="nam">encode</span><span class="op">(</span><span class="str">&quot;ascii&quot;</span><span class="op">,</span> <span class="str">&quot;ignore&quot;</span><span class="op">)</span><span class="op">.</span><span class="nam">decode</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t28" href="#t28">28</a></span><span class="t">    <span class="nam">tokens</span> <span class="op">=</span> <span class="nam">re</span><span class="op">.</span><span class="nam">sub</span><span class="op">(</span><span class="str">r&quot;[^a-z ]&quot;</span><span class="op">,</span> <span class="str">&quot;&quot;</span><span class="op">,</span> <span class="nam">ascii_name</span><span class="op">.</span><span class="nam">lower</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">replace</span><span class="op">(</span><span class="str">&quot;-&quot;</span><span class="op">,</span> <span class="str">&quot; &quot;</span><span class="op">)</span><span class="op">)</span><span class="op">.</span><span class="nam">split</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t29" href="#t29">29</a></span><span class="t">    <span class="key">return</span> <span class="str">&quot; &quot;</span><span class="op">.</span><span class="nam">join</span><span class="op">(</span><span class="nam">t</span> <span class="key">for</span> <span class="nam">t</span> <span class="key">in</span> <span class="nam">tokens</span> <span class="key">if</span> <span class="nam">t</span> <span class="key">not</span> <span class="key">in</span> <span class="nam">_SUFFIXES</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
         <p>
-            <a class="nav" href="z_ae85f1528048b199_polymarket_py.html">&#xab; prev</a> &nbsp; &nbsp;
+            <a class="nav" href="z_bab21ab150f3385f_strength_py.html">&#xab; prev</a> &nbsp; &nbsp;
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_9c2073c3db183fdd_ratelimit_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.17.2">coverage.py v7.17.2</a>,
-            created at 2026-11-09 22:17 +0000
+            created at 2026-11-09 22:31 +0000
         </p>
     </div>
 </footer>
