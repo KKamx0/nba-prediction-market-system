@@ -152,3 +152,14 @@ def test_build_rosters_follows_trades_and_drops_stale_players():
     assert set(rosters["BOS"]) == {1}
     assert rosters["BOS"][1][1].avg5 == 20  # only minutes with the new team
     assert rosters["ATL"][3][1].last == 33  # tonight's line is ignored
+
+
+def test_ambiguous_names_on_one_roster_are_never_guessed():
+    roster = {
+        1: ("Jalen Williams", _f(30)),
+        2: ("Jalen Williams", _f(20)),
+        3: ("Other Guy", _f(30)),
+    }
+    tm = project_team("OKC", roster, {"Jalen Williams": "Out"})
+    assert tm.unmatched_injuries == ["Jalen Williams"]
+    assert tm.expected[1] > 0 and tm.expected[2] > 0

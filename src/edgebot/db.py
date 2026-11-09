@@ -242,6 +242,34 @@ MIGRATIONS: list[str] = [
         detail    TEXT NOT NULL
     );
     """,
+    # 5: news articles and the LLM's structured extractions from them
+    """
+    CREATE TABLE news_articles (
+        url           TEXT PRIMARY KEY,
+        feed          TEXT NOT NULL,
+        title         TEXT NOT NULL,
+        published_at  TEXT NOT NULL,
+        fetched_at    TEXT NOT NULL,
+        status        TEXT NOT NULL,           -- 'extracted' | 'skipped' | 'rejected' | 'error'
+        detail        TEXT
+    );
+
+    CREATE TABLE news_extractions (
+        id                       INTEGER PRIMARY KEY,
+        known_at                 TEXT NOT NULL,   -- max(published_at, extraction time)
+        source_url               TEXT NOT NULL REFERENCES news_articles (url),
+        published_at             TEXT NOT NULL,
+        player                   TEXT NOT NULL,
+        team                     TEXT NOT NULL,
+        status                   TEXT NOT NULL CHECK (status IN
+                                    ('out', 'doubtful', 'questionable', 'probable',
+                                     'available', 'minutes_limit')),
+        minutes_impact_estimate  REAL NOT NULL CHECK (minutes_impact_estimate BETWEEN -48 AND 24),
+        confidence               REAL NOT NULL CHECK (confidence BETWEEN 0 AND 1),
+        model                    TEXT NOT NULL
+    );
+    CREATE INDEX news_extractions_team ON news_extractions (team, known_at);
+    """,
 ]
 
 

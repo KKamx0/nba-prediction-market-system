@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from collections.abc import Callable, Sequence
 from datetime import timedelta
@@ -239,6 +240,21 @@ def build_runner(settings: Settings, store: Store):
             s = report.compute(store, starting_bankroll=settings.paper_bankroll)
             report.send_discord(settings.discord_webhook_url.get(), report.to_text(s))
 
+    news = None
+    if settings.anthropic_api_key:
+        from edgebot.ingest.http import JsonClient
+        from edgebot.news import DEFAULT_FEEDS, NewsExtractor, ingest_news
+
+        extractor = NewsExtractor()
+        feed_client = JsonClient("https://", rate_per_s=0.5)
+        feeds = [f for f in os.environ.get("NEWS_FEEDS", ",".join(DEFAULT_FEEDS)).split(",") if f]
+
+        def news(teams: set[str], rosters: dict[str, set[str]]) -> int:
+            return ingest_news(
+                store, extractor, feed_client.get_bytes,
+                teams_tonight=teams, rosters=rosters, feeds=feeds,
+            )  # fmt: skip
+
     return Runner(
         store=store,
         model=load_model(model_path),
@@ -252,6 +268,7 @@ def build_runner(settings: Settings, store: Store):
             store, stats, season_for_date(utc_now().date()), refresh=True
         ),
         daily_report=daily_report,
+        news=news,
     )
 
 

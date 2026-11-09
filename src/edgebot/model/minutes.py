@@ -164,7 +164,12 @@ def project_team(
 ) -> TeamMinutes:
     """``statuses`` and ``minutes_delta`` are keyed by player name (any spelling)."""
     model = model or MinutesModel()
-    by_key = {name_key(name): pid for pid, (name, _) in roster.items()}
+    keys = [name_key(name) for name, _ in roster.values()]
+    ambiguous = {k for k in keys if keys.count(k) > 1}
+    # two rostered players with the same normalized name: never guess which one is meant
+    by_key = {
+        name_key(name): pid for pid, (name, _) in roster.items() if name_key(name) not in ambiguous
+    }
     status_by_pid: dict[int, str] = {}
     unmatched = []
     for name, status in statuses.items():

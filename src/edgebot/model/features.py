@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 from edgebot.devig import consensus_home_prob
 from edgebot.model.minutes import MinutesModel
 from edgebot.model.strength import RatingsBook, rosters_as_of, statuses_for, team_tonight
+from edgebot.news import news_adjustments_as_of
 from edgebot.teams import TEAMS, travel_km
 from edgebot.timeutil import utc_now
 
@@ -173,14 +174,18 @@ class FeatureBuilder:
 
         sides = {}
         for team in (home, away):
+            official = statuses_for(self.store, team, game_day, as_of)
+            # LLM news extractions (as of the decision time) only adjust minutes and fill
+            # in players the official report doesn't list; they never touch probabilities.
+            news = news_adjustments_as_of(self.store, team, as_of, official)
             sides[team] = team_tonight(
                 team,
                 ratings,
                 rosters.get(team, {}),
-                statuses_for(self.store, team, game_day, as_of),
+                {**news.statuses, **official},
                 back_to_back=rest(team) <= 1,
                 minutes_model=self.minutes_model,
-                minutes_delta=minutes_delta,
+                minutes_delta={**news.minutes_delta, **(minutes_delta or {})},
             )
         h, a = sides[home], sides[away]
 
