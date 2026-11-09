@@ -5,7 +5,7 @@
 | Name                                   |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/edgebot/\_\_init\_\_.py            |        1 |        0 |        0 |        0 |    100% |           |
-| src/edgebot/cli.py                     |      237 |       47 |       26 |        6 |     77% |36-42, 46-50, 54-58, 87-97, 125, 132-133, 163-164, 202-212, 233-241, 266-267, 383 |
+| src/edgebot/cli.py                     |      267 |       55 |       34 |        7 |     76% |36-42, 46-50, 54-58, 87-97, 125, 132-133, 163-164, 193-194, 224-242, 264-272, 297-298, 420 |
 | src/edgebot/config.py                  |       58 |        1 |       10 |        2 |     96% |58, 108-\>107 |
 | src/edgebot/db.py                      |       84 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/devig.py                   |       44 |        4 |       16 |        3 |     85% |29, 50-\>58, 67-69 |
@@ -26,7 +26,8 @@
 | src/edgebot/model/strength.py          |       54 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/names.py                   |       14 |        0 |        2 |        0 |    100% |           |
 | src/edgebot/ratelimit.py               |       26 |        0 |        4 |        0 |    100% |           |
-| src/edgebot/runner.py                  |      161 |       11 |       38 |        6 |     90% |191-\>203, 196-202, 219-\>223, 261, 272, 290, 298, 305 |
+| src/edgebot/report.py                  |      119 |       18 |       22 |        3 |     84% |81-\>78, 179-197, 226 |
+| src/edgebot/runner.py                  |      166 |       11 |       40 |        6 |     91% |194-\>206, 199-205, 222-\>226, 264, 275, 300, 308, 315 |
 | src/edgebot/teams.py                   |       46 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/timeutil.py                |       22 |        0 |        2 |        0 |    100% |           |
 | src/edgebot/trading/\_\_init\_\_.py    |        0 |        0 |        0 |        0 |    100% |           |
@@ -38,7 +39,7 @@
 | src/edgebot/trading/settlement.py      |       27 |        1 |        8 |        1 |     94% |        18 |
 | src/edgebot/trading/sizing.py          |       18 |        1 |        4 |        1 |     91% |        29 |
 | src/edgebot/trading/state.py           |       18 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                              | **2312** |  **146** |  **502** |   **60** | **92%** |           |
+| **TOTAL**                              | **2466** |  **172** |  **534** |   **64** | **91%** |           |
 
 
 ## Setup coverage badge
