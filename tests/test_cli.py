@@ -91,3 +91,39 @@ def test_backtest_and_train_end_to_end(env, capsys):
     assert main(["train"]) == 0
     assert (env / "models" / "game_model.pkl").exists()
     assert "trained" in capsys.readouterr().out
+
+
+def test_kill_switch_engage_and_clear(env, capsys):
+    assert main(["kill"]) == 0
+    assert (env / "run" / "KILL").exists()
+    main(["risk", "status"])
+    assert "kill switch: ENGAGED" in capsys.readouterr().out
+    assert main(["kill", "--clear"]) == 0
+    assert not (env / "run" / "KILL").exists()
+
+
+def test_risk_reset_requires_confirm(env, capsys):
+    from edgebot.trading.risk import RiskState
+    from edgebot.trading.state import save_risk_state
+
+    store = Store(env / "data" / "edge.db")
+    save_risk_state(
+        store,
+        RiskState(bankroll=700, peak=1000, day_start=700, shutdown=True, shutdown_reason="dd"),
+    )
+    store.close()
+    with pytest.raises(PermissionError):
+        main(["risk", "reset"])
+    assert main(["risk", "reset", "--confirm"]) == 0
+    main(["risk", "status"])
+    assert "shutdown: no" in capsys.readouterr().out
+
+
+def test_run_refuses_without_a_trained_model(env):
+    with pytest.raises(SystemExit, match="no trained model"):
+        main(["run", "--once"])
+
+
+def test_live_flag_is_refused_until_the_gate_exists(env, capsys):
+    assert main(["run", "--live", "--confirm-live"]) == 2
+    assert "paper mode only" in capsys.readouterr().out

@@ -173,6 +173,112 @@ def cmd_train(args: argparse.Namespace, settings: Settings, store: Store) -> int
     return 0
 
 
+KILL_FILE = Path("run") / "KILL"
+
+
+def _risk_engine(settings: Settings, store: Store):  # noqa: ANN202
+    from edgebot.trading.risk import RiskEngine, RiskLimits
+    from edgebot.trading.state import load_risk_state
+
+    return RiskEngine(RiskLimits(), load_risk_state(store, settings.paper_bankroll), KILL_FILE)
+
+
+def build_runner(settings: Settings, store: Store):  # noqa: ANN201
+    """Wire the paper trading loop from settings. Live wiring lives in trading/live.py."""
+    import json
+
+    from edgebot.ingest.injuries import InjuryReports, ingest_new_reports
+    from edgebot.ingest.nba_stats import NbaStats, ingest_season
+    from edgebot.ingest.odds_api import OddsApi
+    from edgebot.ingest.polymarket import PolymarketPublic
+    from edgebot.model.game_model import load_model
+    from edgebot.runner import Runner
+    from edgebot.timeutil import season_for_date
+    from edgebot.trading.executor import PaperExecutor
+
+    model_path = Path("models") / "game_model.pkl"
+    if not model_path.exists():
+        raise SystemExit("no trained model: run `edgebot backtest ...` then `edgebot train`")
+    choice = settings.db_path.parent / "model_choice.json"
+    model_name = json.loads(choice.read_text())["model"] if choice.exists() else "unknown"
+
+    pm = PolymarketPublic()
+    odds = None
+    if settings.odds_api_key:
+        api = OddsApi(settings.odds_api_key.get())
+        odds = lambda: store.insert_odds_quotes(api.nba_moneylines())  # noqa: E731
+    stats = NbaStats(settings.cache_dir / "nba_api")
+    reports = InjuryReports()
+    return Runner(
+        store=store,
+        model=load_model(model_path),
+        model_name=model_name,
+        executor=PaperExecutor(store, pm.book, theta=0.095),
+        risk=_risk_engine(settings, store),
+        polymarket=pm,
+        injuries=lambda: ingest_new_reports(store, reports),
+        odds=odds,
+        results=lambda: ingest_season(
+            store, stats, season_for_date(utc_now().date()), refresh=True
+        ),
+    )
+
+
+def cmd_run(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    if args.live:
+        from edgebot.trading.live import run_live
+
+        return run_live(args, settings, store)
+    runner = build_runner(settings, store)
+    print(f"paper mode: bankroll ${runner.risk.state.bankroll:,.2f}; `edgebot kill` to stop")
+    if args.once:
+        r = runner.cycle()
+        print(
+            f"{r.snapshots} snapshots, {r.evaluated} evaluated, {r.bets} bets, {r.settled} settled"
+        )
+        return 0
+    runner.run(args.interval)
+    return 0
+
+
+def cmd_kill(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.trading.state import log_risk_event
+
+    if args.clear:
+        KILL_FILE.unlink(missing_ok=True)
+        log_risk_event(store, "kill_switch_cleared", "manual")
+        print("kill switch cleared")
+        return 0
+    KILL_FILE.parent.mkdir(parents=True, exist_ok=True)
+    KILL_FILE.write_text(f"engaged {utc_now().isoformat()}\n")
+    log_risk_event(store, "kill_switch", "engaged from CLI")
+    print(f"kill switch engaged ({KILL_FILE}); the loop cancels open orders and stops")
+    return 0
+
+
+def cmd_risk(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.trading.state import log_risk_event, save_risk_state
+
+    eng = _risk_engine(settings, store)
+    s = eng.state
+    if args.action == "reset":
+        if not s.shutdown and s.halted_until is None:
+            print("nothing to reset")
+            return 0
+        eng.manual_reset(confirm=args.confirm)  # raises without --confirm
+        save_risk_state(store, s)
+        log_risk_event(store, "manual_reset", f"bankroll {s.bankroll:.2f}")
+        print("risk breakers reset; drawdown is now measured from the current bankroll")
+        return 0
+    print(
+        f"bankroll ${s.bankroll:,.2f} | peak ${s.peak:,.2f} | drawdown {eng.drawdown():.1%} | "
+        f"today {-eng.daily_loss():.1%} | open exposure ${s.open_exposure:,.2f}\n"
+        f"halted until: {s.halted_until or '-'} | shutdown: {s.shutdown_reason or 'no'} | "
+        f"kill switch: {'ENGAGED' if eng.killed() else 'off'}"
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="edgebot", description=__doc__.split("\n\n")[0])
     p.add_argument("-v", "--verbose", action="store_true")
@@ -235,6 +341,22 @@ def build_parser() -> argparse.ArgumentParser:
     tr = sub.add_parser("train", help="fit the selected model on all data for live use")
     tr.add_argument("--model", help="override the backtest's choice")
     tr.set_defaults(fn=cmd_train)
+
+    run = sub.add_parser("run", help="trading loop (paper by default)")
+    run.add_argument("--once", action="store_true", help="run a single cycle and exit")
+    run.add_argument("--interval", type=float, default=300, help="seconds between cycles")
+    run.add_argument("--live", action="store_true", help="live trading (gated; see README)")
+    run.add_argument("--confirm-live", action="store_true", help="required with --live")
+    run.set_defaults(fn=cmd_run)
+
+    kill = sub.add_parser("kill", help="engage the kill switch (cancel orders, stop the loop)")
+    kill.add_argument("--clear", action="store_true", help="disengage it")
+    kill.set_defaults(fn=cmd_kill)
+
+    risk = sub.add_parser("risk", help="risk status, or reset a halt or shutdown")
+    risk.add_argument("action", choices=["status", "reset"])
+    risk.add_argument("--confirm", action="store_true", help="required for reset")
+    risk.set_defaults(fn=cmd_risk)
     return p
 
 
