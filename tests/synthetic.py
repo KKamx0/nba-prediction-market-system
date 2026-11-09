@@ -36,7 +36,13 @@ def make_league(
     start: date = date(2025, 10, 21),
     sd: float = 3.0,
     dnp_rate: float = 0.12,
+    game_seed: int | None = None,
+    id_prefix: str = "00225",
 ) -> League:
+    """``seed`` fixes the players' true ratings; ``game_seed`` the schedule and noise.
+
+    Same ``seed`` + different ``game_seed`` = the same league playing another season.
+    """
     rng = np.random.default_rng(seed)
     teams = sorted(TEAMS)
     rosters, true_off, true_def, base_min = {}, {}, {}, {}
@@ -52,13 +58,15 @@ def make_league(
             base_min[pid] = m
             pid += 1
 
+    if game_seed is not None:
+        rng = np.random.default_rng(game_seed)
     team_games, player_games = [], []
     true_p_home: dict[str, float] = {}
     league_eff = 112.0
     for g in range(n_games):
         day = start + timedelta(days=g // 15)
         home, away = rng.choice(teams, 2, replace=False)
-        gid = f"00225{g:05d}"
+        gid = f"{id_prefix}{g:05d}"
         known = box_score_known_at(day)
         poss = float(rng.normal(99, 3))
         mins = {}
