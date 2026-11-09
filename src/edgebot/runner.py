@@ -95,6 +95,7 @@ class Runner:
         odds: Callable[[], int] | None = None,
         results: Callable[[], object] | None = None,
         daily_report: Callable[[], object] | None = None,
+        news: Callable[[set[str], dict[str, set[str]]], int] | None = None,
         config: RunnerConfig | None = None,
         clock: Callable[[], datetime] = utc_now,
     ) -> None:
@@ -103,6 +104,7 @@ class Runner:
         self.injuries, self.odds, self.results = injuries, odds, results
         self._results_day = None
         self.daily_report = daily_report
+        self.news = news
         self._report_day = None
         self.cfg = config or RunnerConfig()
         self.clock = clock
@@ -152,6 +154,20 @@ class Runner:
                 ),
             )
         return cur.lastrowid
+
+    def _ingest_news(self, games: list[Moneyline], now: datetime) -> int:
+        """Only articles about teams playing soon go to the LLM; rosters gate its output."""
+        from edgebot.model.strength import rosters_as_of
+        from edgebot.names import name_key
+
+        teams = {t for ml in games for t in (ml.home, ml.away)}
+        today = now.astimezone(ET).date()
+        rosters = {
+            team: {name_key(name) for name, _ in players.values()}
+            for team, players in rosters_as_of(self.store, today, now).items()
+            if team in teams
+        }
+        return self.news(teams, rosters)
 
     # -- one game ----------------------------------------------------------
     def evaluate(self, ml: Moneyline, book: OrderBook, now: datetime) -> Decision:
@@ -264,6 +280,15 @@ class Runner:
             self._last_odds = now
 
         moneylines = self._safe("moneylines", self.pm.nba_moneylines, report) or []
+        in_window = [
+            ml
+            for ml in moneylines
+            if self.cfg.window_close <= ml.start_utc - now <= self.cfg.window_open
+        ]
+        if self.news and in_window:
+            new_news = self._safe("news", lambda: self._ingest_news(in_window, now), report)
+            new_injuries = (new_injuries or 0) + (new_news or 0)
+
         for ml in moneylines:
             to_tip = ml.start_utc - now
             if not timedelta(0) < to_tip <= self.cfg.snapshot_horizon:

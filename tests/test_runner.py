@@ -212,3 +212,21 @@ def test_daily_report_sent_once_after_settlement_window(env):
     runner.cycle()
     runner.cycle()
     assert len(sent) == 1
+
+
+def test_news_runs_for_teams_in_window_and_triggers_reevaluation(env):
+    _, runner, clock, _ = env
+    calls = []
+
+    def news(teams, rosters):
+        calls.append((teams, rosters))
+        return 1  # one new extraction
+
+    runner.news = news
+    runner.cycle()
+    teams, rosters = calls[0]
+    assert teams == {"BOS", "LAL"}
+    assert set(rosters) == {"BOS", "LAL"} and all(rosters.values())
+    # not normally due again for 30 minutes, but new news forces a re-evaluation
+    clock["now"] = NOW + timedelta(minutes=5)
+    assert runner.cycle().evaluated == 1
