@@ -11,8 +11,9 @@ strong prior. The default action is **no bet**.
 > **Status:** early development. Done so far: repo setup,
 > [Phase 0 platform verification](docs/phase-0-verification.md), data
 > ingestion ([data sources](docs/data.md)), player ratings and minutes
-> projection, and the game model with a walk-forward backtest and leakage
-> test. The trading layer is next. Nothing here has traded real money.
+> projection, the game model with a walk-forward backtest and leakage test,
+> and the paper trading loop. Reporting and LLM news extraction are next.
+> Nothing here has traded real money.
 
 ## Why the LLM is kept away from the numbers
 
@@ -120,10 +121,39 @@ connection.
 
 ## Paper mode
 
-There is no Polymarket US sandbox, so paper mode is a local simulator. It pulls
-the real order book from the public gateway and "fills" each order by walking
-the book at our size, including taker fees. No account or API key is needed.
-Paper mode is the default. Live trading is behind the gate described below.
+There is no Polymarket US sandbox, so paper mode is a local simulator. It
+pulls the real order book from the public gateway at the moment of each order
+and "fills" it by walking the book at our size, up to the limit price,
+immediate-or-cancel, with the exchange's taker fee. No Polymarket account or
+key is needed.
+
+```bash
+edgebot run --once          # one cycle, then exit
+edgebot run --interval 300  # loop every 5 minutes
+edgebot risk status         # bankroll, drawdown, exposure, breakers
+edgebot kill                # kill switch: cancel orders and stop the loop
+edgebot kill --clear
+edgebot risk reset --confirm  # the only way out of a drawdown shutdown
+```
+
+Each cycle settles finished games and pulls new injury reports. It then
+snapshots every book within 36 hours of tip (these snapshots measure closing
+line value) and re-evaluates games 6h to 10min before tip. A game is
+re-evaluated when first seen, after any new injury report, or every 30
+minutes. Every decision is written to SQLite with its reasons, passes
+included. With no sportsbook line available the model has no market prior,
+so it passes instead of guessing.
+
+**Per-game decision** (`trading/decision.py`):
+1. If model and market disagree by more than 15 points, don't bet; flag for
+   review.
+2. The best side must clear a 4% edge over the executable price, after fees
+   and slippage.
+3. If anyone is questionable, the edge must hold in both the
+   "everyone plays" and "everyone sits" scenarios.
+4. Enough liquidity at prices that keep the edge.
+5. 0.25 Kelly on a probability blended 50/50 with the market, then shrink
+   the order until the edge still clears 4% at that size.
 
 ## Risk controls
 
