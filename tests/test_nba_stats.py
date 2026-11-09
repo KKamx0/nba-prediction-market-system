@@ -3,7 +3,6 @@ from datetime import UTC, datetime, timedelta
 import pandas as pd
 import pytest
 
-from edgebot.db import Store
 from edgebot.ingest.nba_stats import (
     NbaStats,
     games_from_team_logs,
@@ -79,10 +78,9 @@ class FakeFetcher:
         )
 
 
-def test_ingest_season_is_cached_and_as_of_correct(tmp_path):
+def test_ingest_season_is_cached_and_as_of_correct(tmp_path, store):
     fetcher = FakeFetcher()
     stats = NbaStats(tmp_path / "cache", fetcher=fetcher)
-    store = Store(":memory:")
     counts = ingest_season(store, stats, "2026-27")
     assert counts == {"games": 1, "player_games": 2}
 
@@ -110,8 +108,7 @@ def test_schedule_rows_skip_unset_playoff_slots_and_bound_known_at():
     assert late[0]["known_at"] == r["tip_utc"] - timedelta(days=1)
 
 
-def test_ingest_schedule_writes_tip_times(tmp_path):
-    store = Store(":memory:")
+def test_ingest_schedule_writes_tip_times(tmp_path, store):
     n = ingest_schedule(store, NbaStats(tmp_path, fetcher=FakeFetcher()), "2026-27")
     assert n == 1
     (row,) = store.query("SELECT * FROM games")

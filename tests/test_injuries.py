@@ -2,7 +2,6 @@ from datetime import UTC, datetime
 
 import pytest
 
-from edgebot.db import Store
 from edgebot.ingest.injuries import (
     PUBLISH_LAG,
     find_report_links,
@@ -102,8 +101,7 @@ class FakeReports:
         return parse_report_lines(LINES, ts, url)
 
 
-def test_ingest_only_fetches_new_reports():
-    store = Store(":memory:")
+def test_ingest_only_fetches_new_reports(store):
     fake = FakeReports()
     assert ingest_new_reports(store, fake) == 12
     assert fake.fetched == ["a", "b"]

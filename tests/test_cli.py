@@ -40,7 +40,10 @@ def test_odds_history_import_end_to_end(env, capsys):
     assert main(args) == 0
     assert "1 closing lines imported" in capsys.readouterr().out
     store = Store(env / "data" / "edge.db")
-    (row,) = store.query("SELECT home, away, kind FROM odds_quotes")
+    try:
+        (row,) = store.query("SELECT home, away, kind FROM odds_quotes")
+    finally:
+        store.close()
     assert tuple(row) == ("BOS", "NYK", "closing")
 
 

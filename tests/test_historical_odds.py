@@ -3,7 +3,6 @@ from datetime import UTC, datetime
 import pandas as pd
 import pytest
 
-from edgebot.db import Store
 from edgebot.ingest.historical_odds import (
     ColumnMap,
     ImportAbortedError,
@@ -111,7 +110,7 @@ def test_load_file_aborts_when_mapping_looks_wrong(tmp_path):
     assert len(rep.rows) == 1
 
 
-def test_imported_rows_store_and_dedupe():
+def test_imported_rows_store_and_dedupe(store):
     df = pd.DataFrame(
         {
             "date": ["2024-01-15"],
@@ -122,6 +121,5 @@ def test_imported_rows_store_and_dedupe():
         }
     )
     rows = import_wide(df, ColumnMap(), "x").rows
-    store = Store(":memory:")
     assert store.insert_odds_quotes(rows) == 1
     assert store.insert_odds_quotes(rows) == 0

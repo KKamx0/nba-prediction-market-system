@@ -7,7 +7,6 @@ import httpx
 import pytest
 import respx
 
-from edgebot.db import Store
 from edgebot.ingest.http import JsonClient
 from edgebot.ingest.polymarket import (
     GATEWAY_URL,
@@ -119,8 +118,7 @@ def test_client_lists_open_moneylines_and_fetches_books():
     assert pm.book(mls[0].market_slug).asks[0].price == 0.48
 
 
-def test_snapshot_roundtrip_through_store():
-    store = Store(":memory:")
+def test_snapshot_roundtrip_through_store(store):
     ml = parse_moneyline(EVENTS["events"][0])
     book = parse_book(BOOK, fetched_at=NOW)
     snapshot_to_store(store, ml, book)

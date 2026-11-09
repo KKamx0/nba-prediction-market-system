@@ -8,13 +8,6 @@ from edgebot.db import MIGRATIONS, Store
 T0 = datetime(2026, 11, 9, 18, 0, tzinfo=UTC)
 
 
-@pytest.fixture
-def store():
-    s = Store(":memory:")
-    yield s
-    s.close()
-
-
 def _game(store, game_id="0022600001", home="ATL", away="LAL"):
     store.upsert_game(
         game_id=game_id,
