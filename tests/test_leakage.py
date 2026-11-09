@@ -96,6 +96,21 @@ def _corrupt_the_future(store, games):
             }
             for n in names
         )
+        # a late news extraction claiming the home team's top player is out
+        url = f"https://news.test/{gd}/{home}"
+        with store.conn:
+            store.conn.execute(
+                "INSERT INTO news_articles (url, feed, title, published_at, fetched_at, status) "
+                "VALUES (?, 'test', 't', ?, ?, 'extracted')",
+                (url, to_iso(late), to_iso(late)),
+            )
+            for n in names[:3]:
+                store.conn.execute(
+                    "INSERT INTO news_extractions (known_at, source_url, published_at, player, team,"
+                    " status, minutes_impact_estimate, confidence, model)"
+                    " VALUES (?, ?, ?, ?, ?, 'out', -40, 0.99, 'test')",
+                    (to_iso(late), url, to_iso(late), n, home),
+                )
         # late odds moving the line to a near-lock
         store.insert_odds_quotes(
             [
