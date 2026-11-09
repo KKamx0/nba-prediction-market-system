@@ -14,7 +14,8 @@ from edgebot.ratelimit import TokenBucket
 log = logging.getLogger(__name__)
 
 RETRY_STATUSES = {429, 500, 502, 503, 504}
-USER_AGENT = "edgebot/0.1 (+https://github.com/KKamx0/nba-prediction-market-system)"
+# Generic on purpose: no project URL or personal details go to third parties.
+USER_AGENT = "edgebot/0.1"
 
 
 class FetchError(RuntimeError):
