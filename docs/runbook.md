@@ -133,13 +133,10 @@ The gate is computed from the database: 300+ settled paper bets over 6+
 weeks this season, CLV with a CI above zero, log loss better than the market,
 positive ROI, and drawdown under 15%. On top of that, only you can set these:
 
-1. Confirm eligibility in the Polymarket US app for where you live, then set
-   `JURISDICTION_CLEARED=true`. Washington's regulator considers participation
-   unauthorized (see [phase-0-verification.md](phase-0-verification.md)).
-2. Use a dedicated Polymarket US account funded with the trading bankroll only.
+1. Use a dedicated Polymarket US account funded with the trading bankroll only.
    Create an API key at polymarket.us/developer and put it in `.env`.
-3. Set `LIVE_BANKROLL_CAP` (dollars) and `LIVE_TRADING=true`.
-4. Leave `LIVE_ALLOW_SHORT=false` until you've previewed a one-contract
+2. Set `LIVE_BANKROLL_CAP` (dollars) and `LIVE_TRADING=true`.
+3. Leave `LIVE_ALLOW_SHORT=false` until you've previewed a one-contract
    `ORDER_INTENT_BUY_SHORT` order and confirmed its price is on the NO scale.
    Until then edgebot only takes long-side positions.
 

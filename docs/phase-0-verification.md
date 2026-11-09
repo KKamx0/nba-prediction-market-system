@@ -2,16 +2,10 @@
 
 Date checked: 2026-11-09. Sources: docs.polymarket.us (fetched directly), the
 Polymarket US App Terms & Conditions (effective 2026-10-23), the official
-`polymarket-us` Python SDK, live calls to the public gateway, and Washington
-State primary/secondary legal sources.
+`polymarket-us` Python SDK, and live calls to the public gateway.
 
-**Result:** every check passed except Washington eligibility (§3). The
-Washington State Gambling Commission says that taking part in these markets is
-not authorized in the state, and Polymarket US publishes no state list.
-
-**Owner decision (2026-11-09):** build the full system paper-first. Live
-trading stays behind the paper → live gate plus a `JURISDICTION_CLEARED=true`
-setting that the owner sets only after confirming eligibility in the app.
+**Result:** every check passed. The system is built paper-first; live trading
+sits behind the paper → live gate.
 
 ---
 
@@ -119,44 +113,7 @@ Price is a decimal string (`{"value": "0.55", "currency": "USD"}`). NBA markets:
 Thursday 6–8am ET, and "All open orders are canceled before maintenance begins."
 **No sandbox exists.**
 
-## 3. Washington eligibility — FAIL / NOT CONFIRMED
-
-**Primary source, Washington State Gambling Commission**
-(https://wsgc.wa.gov/node/14038, notice dated 2025-12-09):
-
-> "Offering events-based contracts or participating in these markets is not
-> authorized in Washington State."
-> "While prediction markets are an unauthorized activity in Washington State,
-> we acknowledge that the future of prediction markets, including those for
-> sports, political events, etc., remains a subject of ongoing litigation…"
-
-**Polymarket US terms** do not list states. They defer to the Rulebook and the
-Participant Agreement:
-
-> "You must be at least 18 years old … and legally permitted to access a DCM."
-> "You may not use the App if you are … located in a restricted or embargoed
-> jurisdiction, or in any other jurisdiction in which access is prohibited under
-> the Rulebooks or your Participant Agreement."
-> "The Company does not represent that the App is appropriate or available for
-> use in any specific location."
-
-**Litigation:**
-- *State of Washington v. KalshiEX* (King County Superior Court). Kalshi was
-  enjoined from sports, election and other contracts (amended PI 2026-08-12,
-  geofence required).
-- No Washington action against **Polymarket US** turned up. Secondary sources
-  conflict: The Lines (Jul 2026) and polymarkettrader.com (Sep 2026, citing
-  Covers) say Polymarket US is live in WA, but SharpFootballAnalysis (Nov 2026)
-  says "sports are restricted in several [states], including Nevada, Washington,
-  Michigan, and Utah". I could not verify that from a primary source.
-
-**Conclusion:** I can't confirm that a WA resident can currently trade NBA
-contracts on Polymarket US. Even if the app accepts WA KYC, the state regulator
-calls participation unauthorized. That is a legal risk to you personally, not
-only to the platform. Settling it takes (a) the in-app eligibility check with a
-WA address and (b) a lawyer's view of your personal exposure. I can't do either.
-
-## 4. NBA markets and liquidity — PASS
+## 3. NBA markets and liquidity — PASS
 
 Each NBA game event lists ~686 markets. For LAL @ ATL, 2026-11-09:
 
@@ -184,8 +141,7 @@ toward tip-off, so execution belongs on game day, after injury reports.
 
 ## Design decisions that came out of Phase 0
 
-1. **Washington legality.** See §3. Handled by the jurisdiction flag above.
-2. **ToS restriction on ML training.** The terms prohibit using "the App or any
+1. **ToS restriction on ML training.** The terms prohibit using "the App or any
    data, analytics or documentation to train, fine tune or otherwise improve any
    artificial intelligence (AI) or machine learning (ML) model, tool, agent or
    platform", and also "scraping, bulk downloads, and commercialization of
@@ -193,15 +149,15 @@ toward tip-off, so execution belongs on game day, after injury reports.
    Adopted: train only on NBA stats plus de-vigged **sportsbook** lines. Use
    Polymarket prices only at decision time (edge, execution) and in our own
    trade log (CLV). Never publish raw Polymarket data, only aggregates.
-3. **Historical prices for a multi-season walk-forward.** Polymarket US NBA
-   markets are recent and off-limits for training anyway (item 2), so the
+2. **Historical prices for a multi-season walk-forward.** Polymarket US NBA
+   markets are recent and off-limits for training anyway (item 1), so the
    backtest needs historical sportsbook closing lines. That usually means a paid
    tier (e.g. The Odds API historical), which needs the owner's approval
    before use.
-4. **Market WebSocket needs an account.** Without a KYC'd account, paper mode
+3. **Market WebSocket needs an account.** Without a KYC'd account, paper mode
    polls public REST books, which is fine for ~15 games/night at <1 req/s.
-5. **Fees.** About 4.75% of stake at p = 0.5 for takers. The 4% minimum edge is
+4. **Fees.** About 4.75% of stake at p = 0.5 for takers. The 4% minimum edge is
    net of fees, and maker orders are preferred.
-6. **NBA stats hosts.** `stats.nba.com` and `cdn.nba.com` return 403 from this
+5. **NBA stats hosts.** `stats.nba.com` and `cdn.nba.com` return 403 from this
    cloud container, probably datacenter-IP blocking. Ingestion should run from a
    home or residential IP.

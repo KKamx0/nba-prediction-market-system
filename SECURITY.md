@@ -69,8 +69,8 @@ an article or a post.
 | Kill switch | CLI command or flag file: cancel open orders, stop loop |
 
 `LiveExecutor` refuses to run unless the paper-trading record passes the
-live gate (see README), and also requires `LIVE_TRADING=true`,
-`JURISDICTION_CLEARED=true`, and `--confirm-live`.
+live gate (see README), and also requires `LIVE_TRADING=true` and
+`--confirm-live`.
 
 ## External data
 

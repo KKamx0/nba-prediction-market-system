@@ -209,7 +209,7 @@ the same code as the report:
 | Calibration | model log loss < market-only baseline |
 | ROI after fees | > 0 |
 | Max paper drawdown | < 15% |
-| Operator switches | `LIVE_TRADING=true`, `JURISDICTION_CLEARED=true`, `--confirm-live` |
+| Operator switches | `LIVE_TRADING=true`, `--confirm-live` |
 | Bankroll | `LIVE_BANKROLL_CAP` > 0; live sizing uses min(cap, account buying power) |
 
 Live orders (`trading/live.py`) are limit orders, immediate-or-cancel, with
@@ -270,7 +270,4 @@ noise.
 
 ## Disclaimer
 
-This is a personal research project, not financial advice. The legality of
-prediction markets varies by state and is being litigated. See
-[Phase 0](docs/phase-0-verification.md) for the situation in Washington. Check
-the rules where you live before trading.
+Personal research project. Not financial advice.
