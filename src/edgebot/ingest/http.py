@@ -42,6 +42,7 @@ class JsonClient:
         self._bucket = TokenBucket(rate_per_s, sleep=sleep)
         self._max_retries = max_retries
         self._sleep = sleep
+        self.last_headers: httpx.Headers = httpx.Headers()
 
     def get(self, path: str, params: dict[str, Any] | None = None) -> Any:
         for attempt in range(self._max_retries + 1):
@@ -59,7 +60,9 @@ class JsonClient:
                 log.warning("GET %s -> %s, retrying in %.1fs", path, resp.status_code, delay)
                 self._sleep(delay)
                 continue
+            self.last_headers = resp.headers
             if resp.status_code != 200:
+                # path only: query strings may carry API keys and must not be logged
                 raise FetchError(f"GET {path} -> HTTP {resp.status_code}")
             try:
                 return resp.json()
