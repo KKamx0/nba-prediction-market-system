@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: scope
+    groups:
+      dev-tooling:
+        patterns: ["black", "ruff", "pytest*", "pre-commit"]
+
+  # Keeps the SHA-pinned actions in ci.yml current.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"

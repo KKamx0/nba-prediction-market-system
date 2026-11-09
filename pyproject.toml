@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edgebot"
+version = "0.1.0"
+description = "Research agent for NBA markets on Polymarket US: statistical model prices, LLM only extracts news."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Kamsochi Ekwueme" }]
+# Runtime dependencies are added (and pinned) by the phase that needs them.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "black==26.10.1",
+    "pre-commit==4.7.0",
+    "pytest==9.2.0",
+    "pytest-cov==7.1.0",
+    "ruff==0.17.4",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "B",        # bugbear
+    "UP",       # pyupgrade
+    "S",        # bandit (security)
+    "SIM",      # simplify
+    "DTZ",      # naive datetimes: every record must be timezone-aware
+]
+ignore = ["E501"]  # black owns line length
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]  # assert is fine in tests
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "network: test needs live network access (deselected in CI)",
+]
+
+[tool.coverage.run]
+source = ["edgebot"]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
