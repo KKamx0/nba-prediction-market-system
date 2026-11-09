@@ -41,10 +41,14 @@ an article or a post.
    It has no tools and cannot place orders, set sizes, or change config.
 2. **The input is delimited and declared to be data.** The system prompt says
    any instructions inside the article are content to ignore.
-3. **The output is validated strictly.** The JSON is parsed against a schema
-   with closed enums for `status`, bounded numeric ranges, and no extra keys.
-   The player and team must match the known roster for that game. Anything
+3. **The output is validated strictly.** Generation is constrained to a JSON
+   schema (structured outputs), then the JSON is re-validated locally with
+   closed enums for `status`, bounded numeric ranges, and no extra keys. The
+   player and team must match the known roster for that game. Anything
    malformed is rejected and logged, never repaired by guessing.
+   `source_url` and `published_at` are attached from the feed metadata, so an
+   article can't forge its own provenance or timestamp. Oversized articles are
+   rejected rather than silently truncated, and refusals are rejected.
 4. **The blast radius is bounded.** A valid but wrong extraction can only
    change a minutes projection. That change still passes through the
    statistical model, the 15-point disagreement cap, and every risk limit

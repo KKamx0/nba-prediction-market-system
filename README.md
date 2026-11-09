@@ -12,8 +12,8 @@ strong prior. The default action is **no bet**.
 > [Phase 0 platform verification](docs/phase-0-verification.md), data
 > ingestion ([data sources](docs/data.md)), player ratings and minutes
 > projection, the game model with a walk-forward backtest and leakage test,
-> and the paper trading loop. Reporting and LLM news extraction are next.
-> Nothing here has traded real money.
+> the paper trading loop, reporting, and LLM news extraction. The live
+> executor and its gate come last. Nothing here has traded real money.
 
 ## Why the LLM is kept away from the numbers
 
@@ -101,6 +101,30 @@ edgebot snapshot markets
 
 NBA stats endpoints block many datacenter IPs, so run ingestion from a home
 connection.
+
+## The LLM news layer
+
+`news.py` sends RSS articles about teams playing soon to Claude
+(`claude-opus-5-5`) with a JSON schema it must follow:
+
+```json
+{"player": "...", "team": "...", "status": "out|doubtful|questionable|probable|available|minutes_limit",
+ "minutes_impact_estimate": -12, "confidence": 0.9, "source_url": "...", "published_at": "..."}
+```
+
+- The output can only change the **minutes projection**. It has no
+  probability, pick, or size field, and the official injury report overrides
+  it for any player the report lists.
+- News is untrusted input. The article is fenced in tags and declared to be
+  data. The output is schema-constrained and then re-validated locally;
+  malformed output is rejected, not repaired. `source_url` and
+  `published_at` come from the feed, never from the model. Players must be
+  on the team's roster. The model has no tools. See [SECURITY.md](SECURITY.md).
+- Extractions are stamped with when they became known, and the leakage test
+  injects late "star is out" news to prove it can't leak into earlier
+  decisions.
+- Optional: without `ANTHROPIC_API_KEY` the loop runs on the official injury
+  report alone.
 
 ## How team strength is built
 
