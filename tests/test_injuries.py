@@ -126,3 +126,5 @@ def test_name_key_matches_across_sources():
     assert name_key("Jaren Jackson Jr.") == name_key("Jaren Jackson") == "jaren jackson"
     assert name_key("Nikola Jokić") == name_key("Nikola Jokic")
     assert name_key("Shai Gilgeous-Alexander") == "shai gilgeous alexander"
+    assert name_key("Young, Trae") == name_key("Trae Young")
+    assert name_key("Jackson Jr., Jaren") == name_key("Jaren Jackson Jr.")

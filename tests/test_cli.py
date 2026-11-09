@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from edgebot.cli import build_parser, main
-from edgebot.db import Store
+from edgebot.db import MIGRATIONS, Store
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def env(monkeypatch, tmp_path):
 def test_init_db_creates_database(env, capsys):
     assert main(["init-db"]) == 0
     assert (env / "data" / "edge.db").exists()
-    assert "schema v1" in capsys.readouterr().out
+    assert f"schema v{len(MIGRATIONS)}" in capsys.readouterr().out
 
 
 def test_odds_history_import_end_to_end(env, capsys):

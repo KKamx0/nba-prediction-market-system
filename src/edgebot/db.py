@@ -111,6 +111,24 @@ MIGRATIONS: list[str] = [
     );
     CREATE INDEX odds_quotes_game ON odds_quotes (game_date, home, away, known_at);
     """,
+    # 2: team box totals, for possessions (pace) and offense/defense splits
+    """
+    CREATE TABLE team_games (
+        game_id   TEXT NOT NULL REFERENCES games (game_id),
+        team      TEXT NOT NULL,
+        opp       TEXT NOT NULL,
+        is_home   INTEGER NOT NULL CHECK (is_home IN (0, 1)),
+        pts       INTEGER NOT NULL,
+        fga       INTEGER NOT NULL,
+        fta       INTEGER NOT NULL,
+        oreb      INTEGER NOT NULL,
+        tov       INTEGER NOT NULL,
+        poss      REAL NOT NULL CHECK (poss > 50 AND poss < 160),
+        known_at  TEXT NOT NULL,
+        PRIMARY KEY (game_id, team)
+    );
+    CREATE INDEX team_games_team ON team_games (team, known_at);
+    """,
 ]
 
 
@@ -189,6 +207,44 @@ class Store:
                 """,
                 (game_id, home_pts, away_pts, to_iso(known_at)),
             )
+
+    def upsert_team_games(self, rows: Iterable[dict[str, Any]]) -> int:
+        payload = [
+            (
+                r["game_id"],
+                r["team"],
+                r["opp"],
+                int(r["is_home"]),
+                int(r["pts"]),
+                int(r["fga"]),
+                int(r["fta"]),
+                int(r["oreb"]),
+                int(r["tov"]),
+                float(r["poss"]),
+                to_iso(r["known_at"]),
+            )
+            for r in rows
+        ]
+        with self.conn:
+            self.conn.executemany(
+                """
+                INSERT INTO team_games (game_id, team, opp, is_home, pts, fga, fta, oreb,
+                                        tov, poss, known_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (game_id, team) DO NOTHING
+                """,
+                payload,
+            )
+        return len(payload)
+
+    def team_games_as_of(self, as_of: datetime) -> list[sqlite3.Row]:
+        return self.query(
+            """
+            SELECT tg.*, g.game_date, g.season FROM team_games tg JOIN games g USING (game_id)
+            WHERE tg.known_at <= ? ORDER BY g.game_date, tg.game_id, tg.team
+            """,
+            (to_iso(as_of),),
+        )
 
     def upsert_player_games(self, rows: Iterable[dict[str, Any]]) -> int:
         payload = [
@@ -317,6 +373,16 @@ class Store:
         """Every player box-score line known at ``as_of``."""
         return self.query(
             "SELECT * FROM player_games WHERE known_at <= ? ORDER BY known_at, game_id",
+            (to_iso(as_of),),
+        )
+
+    def player_lines_as_of(self, as_of: datetime) -> list[sqlite3.Row]:
+        """Box-score lines known at ``as_of``, with each game's date and season."""
+        return self.query(
+            """
+            SELECT pg.*, g.game_date, g.season FROM player_games pg JOIN games g USING (game_id)
+            WHERE pg.known_at <= ? ORDER BY g.game_date, pg.game_id
+            """,
             (to_iso(as_of),),
         )
 
