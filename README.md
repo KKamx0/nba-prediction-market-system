@@ -213,9 +213,16 @@ real data.
 
 ## Results so far
 
-_No paper trading yet._ This section is generated from `report.py` into
-[`docs/results.md`](docs/results.md). Closing line value is the primary
-metric; ROI over a small sample is mostly noise.
+_No paper trading yet._ `edgebot report --export docs/results.md` writes
+[`docs/results.md`](docs/results.md): bets and passes, closing line value
+with a 95% CI, ROI after fees, model vs sportsbook log loss and Brier, max
+drawdown, and a live calibration plot. It contains aggregates only, with no
+account details or per-bet prices. `edgebot report --send` posts the same
+summary to a Discord webhook, and the loop sends it daily when
+`DISCORD_WEBHOOK_URL` is set.
+
+Closing line value is the primary metric. ROI over a small sample is mostly
+noise.
 
 ## Disclaimer
 
