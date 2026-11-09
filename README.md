@@ -6,11 +6,11 @@
 |--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/edgebot/\_\_init\_\_.py            |        1 |        0 |        0 |        0 |    100% |           |
 | src/edgebot/cli.py                     |      291 |       66 |       38 |        8 |     74% |37-43, 47-51, 55-59, 88-98, 126, 133-134, 164-165, 194-195, 206-207, 240-273, 296-304, 329-330, 456 |
-| src/edgebot/config.py                  |       60 |        1 |       10 |        2 |     96% |60, 112-\>111 |
+| src/edgebot/config.py                  |       59 |        1 |       10 |        2 |     96% |59, 110-\>109 |
 | src/edgebot/db.py                      |       84 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/devig.py                   |       44 |        4 |       16 |        3 |     85% |29, 50-\>58, 67-69 |
 | src/edgebot/doctor.py                  |       67 |        0 |        8 |        1 |     99% |   89-\>92 |
-| src/edgebot/gate.py                    |       50 |        0 |        4 |        0 |    100% |           |
+| src/edgebot/gate.py                    |       49 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/ingest/\_\_init\_\_.py     |        0 |        0 |        0 |        0 |    100% |           |
 | src/edgebot/ingest/historical\_odds.py |      103 |       18 |       34 |        8 |     75% |71-75, 80, 97, 130, 134-135, 141, 156, 173, 177-182 |
 | src/edgebot/ingest/http.py             |       51 |        8 |        6 |        0 |     82% |55, 58, 65-69, 84 |
@@ -42,7 +42,7 @@
 | src/edgebot/trading/settlement.py      |       27 |        1 |        8 |        1 |     94% |        18 |
 | src/edgebot/trading/sizing.py          |       18 |        1 |        4 |        1 |     91% |        29 |
 | src/edgebot/trading/state.py           |       18 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                              | **2882** |  **210** |  **614** |   **71** | **91%** |           |
+| **TOTAL**                              | **2880** |  **210** |  **614** |   **71** | **91%** |           |
 
 
 ## Setup coverage badge
