@@ -129,6 +129,35 @@ MIGRATIONS: list[str] = [
     );
     CREATE INDEX team_games_team ON team_games (team, known_at);
     """,
+    # 3: model inputs and outputs
+    """
+    CREATE TABLE features (
+        id          INTEGER PRIMARY KEY,
+        game_date   TEXT NOT NULL,
+        home        TEXT NOT NULL,
+        away        TEXT NOT NULL,
+        as_of       TEXT NOT NULL,             -- decision time the vector was built for
+        version     TEXT NOT NULL,
+        values_json TEXT NOT NULL,
+        known_at    TEXT NOT NULL,             -- when it was computed
+        UNIQUE (game_date, home, away, as_of, version)
+    );
+
+    CREATE TABLE predictions (
+        id           INTEGER PRIMARY KEY,
+        game_date    TEXT NOT NULL,
+        home         TEXT NOT NULL,
+        away         TEXT NOT NULL,
+        as_of        TEXT NOT NULL,
+        model        TEXT NOT NULL,
+        p_home       REAL NOT NULL CHECK (p_home > 0 AND p_home < 1),
+        p_home_play  REAL,                     -- every uncertain player plays
+        p_home_sit   REAL,                     -- every uncertain player sits
+        p_market     REAL,                     -- de-vigged sportsbook consensus
+        known_at     TEXT NOT NULL
+    );
+    CREATE INDEX predictions_game ON predictions (game_date, home, away, as_of);
+    """,
 ]
 
 
@@ -367,6 +396,58 @@ class Store:
                 payload,
             )
         return cur.rowcount
+
+    def save_features(
+        self,
+        *,
+        game_date: str,
+        home: str,
+        away: str,
+        as_of: datetime,
+        version: str,
+        values: dict[str, Any],
+        known_at: datetime,
+    ) -> None:
+        with self.conn:
+            self.conn.execute(
+                """
+                INSERT INTO features (game_date, home, away, as_of, version, values_json, known_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (game_date, home, away, as_of, version)
+                DO UPDATE SET values_json = excluded.values_json, known_at = excluded.known_at
+                """,
+                (
+                    game_date,
+                    home,
+                    away,
+                    to_iso(as_of),
+                    version,
+                    json.dumps(values, sort_keys=True),
+                    to_iso(known_at),
+                ),
+            )
+
+    def save_prediction(self, **row: Any) -> None:
+        with self.conn:
+            self.conn.execute(
+                """
+                INSERT INTO predictions (game_date, home, away, as_of, model, p_home,
+                                         p_home_play, p_home_sit, p_market, known_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    row["game_date"],
+                    row["home"],
+                    row["away"],
+                    to_iso(row["as_of"]),
+                    row["model"],
+                    row["p_home"],
+                    row.get("p_home_play"),
+                    row.get("p_home_sit"),
+                    row.get("p_market"),
+                    to_iso(row["known_at"]),
+                ),
+            )
 
     # -- point-in-time reads -----------------------------------------------
     def player_games_as_of(self, as_of: datetime) -> list[sqlite3.Row]:
