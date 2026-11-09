@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="z_ae85f1528048b199_odds_api_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.17.2">coverage.py v7.17.2</a>,
-            created at 2026-11-09 22:46 +0000
+            created at 2026-11-09 22:49 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -274,7 +274,7 @@
     <p class="pln"><span class="n"><a id="t190" href="#t190">190</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t191" href="#t191">191</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t192" href="#t192">192</a></span><span class="t"><span class="key">def</span> <span class="nam">ingest_season</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t193" href="#t193">193</a></span><span class="t">    <span class="nam">store</span><span class="op">,</span>  <span class="com"># noqa: ANN001 - edgebot.db.Store</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t193" href="#t193">193</a></span><span class="t">    <span class="nam">store</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t194" href="#t194">194</a></span><span class="t">    <span class="nam">stats</span><span class="op">:</span> <span class="nam">NbaStats</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t195" href="#t195">195</a></span><span class="t">    <span class="nam">season</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t196" href="#t196">196</a></span><span class="t">    <span class="op">*</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -342,13 +342,11 @@
     <p class="run"><span class="n"><a id="t258" href="#t258">258</a></span><span class="t">    <span class="key">return</span> <span class="nam">out</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t259" href="#t259">259</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t260" href="#t260">260</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t261" href="#t261">261</a></span><span class="t"><span class="key">def</span> <span class="nam">ingest_schedule</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t262" href="#t262">262</a></span><span class="t">    <span class="nam">store</span><span class="op">,</span> <span class="nam">stats</span><span class="op">:</span> <span class="nam">NbaStats</span><span class="op">,</span> <span class="nam">season</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span> <span class="op">*</span><span class="op">,</span> <span class="nam">refresh</span><span class="op">:</span> <span class="nam">bool</span> <span class="op">=</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t263" href="#t263">263</a></span><span class="t"><span class="op">)</span> <span class="op">-&gt;</span> <span class="nam">int</span><span class="op">:</span>  <span class="com"># noqa: ANN001</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t264" href="#t264">264</a></span><span class="t">    <span class="nam">rows</span> <span class="op">=</span> <span class="nam">schedule_rows</span><span class="op">(</span><span class="nam">stats</span><span class="op">.</span><span class="nam">schedule</span><span class="op">(</span><span class="nam">season</span><span class="op">,</span> <span class="nam">refresh</span><span class="op">)</span><span class="op">,</span> <span class="nam">season</span><span class="op">,</span> <span class="nam">utc_now</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t265" href="#t265">265</a></span><span class="t">    <span class="key">for</span> <span class="nam">r</span> <span class="key">in</span> <span class="nam">rows</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t266" href="#t266">266</a></span><span class="t">        <span class="nam">store</span><span class="op">.</span><span class="nam">upsert_game</span><span class="op">(</span><span class="op">**</span><span class="nam">r</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t267" href="#t267">267</a></span><span class="t">    <span class="key">return</span> <span class="nam">len</span><span class="op">(</span><span class="nam">rows</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t261" href="#t261">261</a></span><span class="t"><span class="key">def</span> <span class="nam">ingest_schedule</span><span class="op">(</span><span class="nam">store</span><span class="op">,</span> <span class="nam">stats</span><span class="op">:</span> <span class="nam">NbaStats</span><span class="op">,</span> <span class="nam">season</span><span class="op">:</span> <span class="nam">str</span><span class="op">,</span> <span class="op">*</span><span class="op">,</span> <span class="nam">refresh</span><span class="op">:</span> <span class="nam">bool</span> <span class="op">=</span> <span class="key">True</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="nam">int</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t262" href="#t262">262</a></span><span class="t">    <span class="nam">rows</span> <span class="op">=</span> <span class="nam">schedule_rows</span><span class="op">(</span><span class="nam">stats</span><span class="op">.</span><span class="nam">schedule</span><span class="op">(</span><span class="nam">season</span><span class="op">,</span> <span class="nam">refresh</span><span class="op">)</span><span class="op">,</span> <span class="nam">season</span><span class="op">,</span> <span class="nam">utc_now</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t263" href="#t263">263</a></span><span class="t">    <span class="key">for</span> <span class="nam">r</span> <span class="key">in</span> <span class="nam">rows</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t264" href="#t264">264</a></span><span class="t">        <span class="nam">store</span><span class="op">.</span><span class="nam">upsert_game</span><span class="op">(</span><span class="op">**</span><span class="nam">r</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t265" href="#t265">265</a></span><span class="t">    <span class="key">return</span> <span class="nam">len</span><span class="op">(</span><span class="nam">rows</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -358,7 +356,7 @@
             <a class="nav" href="z_ae85f1528048b199_odds_api_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.17.2">coverage.py v7.17.2</a>,
-            created at 2026-11-09 22:46 +0000
+            created at 2026-11-09 22:49 +0000
         </p>
     </div>
 </footer>

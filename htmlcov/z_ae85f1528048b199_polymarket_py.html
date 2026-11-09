@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="z_bab21ab150f3385f_backtest_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.17.2">coverage.py v7.17.2</a>,
-            created at 2026-11-09 22:46 +0000
+            created at 2026-11-09 22:49 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -271,7 +271,7 @@
     <p class="run"><span class="n"><a id="t187" href="#t187">187</a></span><span class="t">        <span class="key">return</span> <span class="nam">parse_book</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">_client</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="fst">f&quot;</span><span class="fst">/v1/markets/</span><span class="op">{</span><span class="nam">market_slug</span><span class="op">}</span><span class="fst">/book</span><span class="fst">&quot;</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t188" href="#t188">188</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t189" href="#t189">189</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t190" href="#t190">190</a></span><span class="t"><span class="key">def</span> <span class="nam">snapshot_to_store</span><span class="op">(</span><span class="nam">store</span><span class="op">,</span> <span class="nam">ml</span><span class="op">:</span> <span class="nam">Moneyline</span><span class="op">,</span> <span class="nam">book</span><span class="op">:</span> <span class="nam">OrderBook</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="key">None</span><span class="op">:</span>  <span class="com"># noqa: ANN001</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t190" href="#t190">190</a></span><span class="t"><span class="key">def</span> <span class="nam">snapshot_to_store</span><span class="op">(</span><span class="nam">store</span><span class="op">,</span> <span class="nam">ml</span><span class="op">:</span> <span class="nam">Moneyline</span><span class="op">,</span> <span class="nam">book</span><span class="op">:</span> <span class="nam">OrderBook</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t191" href="#t191">191</a></span><span class="t">    <span class="nam">store</span><span class="op">.</span><span class="nam">insert_market_snapshot</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t192" href="#t192">192</a></span><span class="t">        <span class="nam">known_at</span><span class="op">=</span><span class="nam">book</span><span class="op">.</span><span class="nam">fetched_at</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t193" href="#t193">193</a></span><span class="t">        <span class="nam">market_slug</span><span class="op">=</span><span class="nam">ml</span><span class="op">.</span><span class="nam">market_slug</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -287,7 +287,7 @@
     <p class="run run2"><span class="n"><a id="t203" href="#t203">203</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t204" href="#t204">204</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t205" href="#t205">205</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t206" href="#t206">206</a></span><span class="t"><span class="key">def</span> <span class="nam">book_from_snapshot</span><span class="op">(</span><span class="nam">row</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="nam">OrderBook</span><span class="op">:</span>  <span class="com"># noqa: ANN001</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t206" href="#t206">206</a></span><span class="t"><span class="key">def</span> <span class="nam">book_from_snapshot</span><span class="op">(</span><span class="nam">row</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="nam">OrderBook</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t207" href="#t207">207</a></span><span class="t">    <span class="str">&quot;&quot;&quot;Rebuild a validated OrderBook from a stored market_snapshots row.&quot;&quot;&quot;</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t208" href="#t208">208</a></span><span class="t">    <span class="key">return</span> <span class="nam">OrderBook</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t209" href="#t209">209</a></span><span class="t">        <span class="nam">market_slug</span><span class="op">=</span><span class="nam">row</span><span class="op">[</span><span class="str">&quot;market_slug&quot;</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -306,7 +306,7 @@
             <a class="nav" href="z_bab21ab150f3385f_backtest_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.17.2">coverage.py v7.17.2</a>,
-            created at 2026-11-09 22:46 +0000
+            created at 2026-11-09 22:49 +0000
         </p>
     </div>
 </footer>
