@@ -12,8 +12,9 @@ strong prior. The default action is **no bet**.
 > [Phase 0 platform verification](docs/phase-0-verification.md), data
 > ingestion ([data sources](docs/data.md)), player ratings and minutes
 > projection, the game model with a walk-forward backtest and leakage test,
-> the paper trading loop, reporting, and LLM news extraction. The live
-> executor and its gate come last. Nothing here has traded real money.
+> the paper trading loop, reporting, LLM news extraction, and the gated live
+> executor. Next: paper trading through the 2026-27 season
+> ([runbook](docs/runbook.md)). Nothing here has traded real money.
 
 ## Why the LLM is kept away from the numbers
 
@@ -197,12 +198,28 @@ These are enforced in code (`risk.py`), not left to configuration:
 - A 20% drawdown from peak triggers full shutdown; only a manual restart resumes.
 - Kill switch (CLI command or flag file) that cancels open orders and stops the loop.
 
-**Paper → live gate.** `LiveExecutor` refuses to start unless the database
-shows at least 300 paper bets over at least 6 weeks, positive average CLV with
-a confidence interval excluding zero, model log loss better than the
-market-only baseline, positive ROI after fees, and max drawdown under 15%.
-It also requires `LIVE_TRADING=true`, `JURISDICTION_CLEARED=true`, and the
-`--confirm-live` flag.
+**Paper → live gate** (`gate.py`). `edgebot run --live --confirm-live`
+refuses to start unless every check passes, computed from the database with
+the same code as the report:
+
+| Check | Requirement |
+| - | - |
+| Paper bets this season | ≥ 300 settled, over ≥ 6 weeks |
+| Closing line value | mean > 0 and the 95% CI excludes zero |
+| Calibration | model log loss < market-only baseline |
+| ROI after fees | > 0 |
+| Max paper drawdown | < 15% |
+| Operator switches | `LIVE_TRADING=true`, `JURISDICTION_CLEARED=true`, `--confirm-live` |
+| Bankroll | `LIVE_BANKROLL_CAP` > 0; live sizing uses min(cap, account buying power) |
+
+Live orders (`trading/live.py`) are limit orders, immediate-or-cancel, with
+`manualOrderIndicator = MANUAL_ORDER_INDICATOR_AUTOMATIC`, and each is
+previewed with the exchange before it's sent. Short-side (NO) orders stay
+off (`LIVE_ALLOW_SHORT=false`) until you confirm the short-side price
+convention with a one-contract preview, because the docs don't specify it.
+An order whose outcome is unknown, such as a timeout, is never retried; it
+counts as exposure until reconciled. Paper and live keep separate risk
+state.
 
 ## Backtest
 

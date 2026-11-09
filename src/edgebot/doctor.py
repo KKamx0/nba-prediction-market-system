@@ -126,8 +126,8 @@ def data_checks(
             "kill switch", "warn" if kill.exists() else "ok", "ENGAGED" if kill.exists() else "off"
         )
     )
-    state = store.query("SELECT state_json FROM risk_state WHERE id = 1")
-    shutdown = bool(state) and json.loads(state[0]["state_json"]).get("shutdown")
+    states = store.query("SELECT state_json FROM risk_states")
+    shutdown = any(json.loads(r["state_json"]).get("shutdown") for r in states)
     out.append(
         Check(
             "risk breakers",

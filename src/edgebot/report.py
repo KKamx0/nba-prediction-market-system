@@ -83,7 +83,7 @@ def max_drawdown(pnls: list[float], starting_bankroll: float) -> float:
     return worst
 
 
-def scored_predictions(store) -> list[tuple[int, float, float]]:
+def scored_predictions(store, since_date: str = "0000-00-00") -> list[tuple[int, float, float]]:
     """(home_won, model p_home, market p_home), using each game's last prediction before tip."""
     rows = store.query("""
         SELECT p.game_date, p.home, p.away, p.p_home, p.p_market, r.home_pts, r.away_pts
@@ -103,8 +103,18 @@ def scored_predictions(store) -> list[tuple[int, float, float]]:
     return list(latest.values())
 
 
-def compute(store, *, mode: str = "paper", starting_bankroll: float = 1000.0) -> Summary:
-    pos = store.query("SELECT * FROM positions WHERE mode = ? ORDER BY opened_at", (mode,))
+def compute(
+    store,
+    *,
+    mode: str = "paper",
+    starting_bankroll: float = 1000.0,
+    since_date: str = "0000-00-00",
+) -> Summary:
+    """Summary over positions and predictions for games on or after ``since_date``."""
+    pos = store.query(
+        "SELECT * FROM positions WHERE mode = ? AND game_date >= ? ORDER BY opened_at",
+        (mode, since_date),
+    )
     settled = [p for p in pos if p["settled_at"]]
     staked = sum(p["cost"] + p["fees"] for p in settled)
     pnl = sum(p["pnl"] for p in settled)
@@ -116,7 +126,7 @@ def compute(store, *, mode: str = "paper", starting_bankroll: float = 1000.0) ->
     by_settle = sorted(settled, key=lambda p: p["settled_at"])
     decisions = store.query("SELECT action, COUNT(*) AS n FROM decisions GROUP BY action")
     counts = {r["action"]: r["n"] for r in decisions}
-    scored = scored_predictions(store)
+    scored = scored_predictions(store, since_date)
     y = [s[0] for s in scored]
     pm = [s[1] for s in scored]
     pk = [s[2] for s in scored]

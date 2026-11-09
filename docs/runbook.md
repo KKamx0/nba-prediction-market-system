@@ -123,9 +123,25 @@ edgebot risk status     # bankroll, drawdown, breakers
 edgebot risk reset --confirm   # only after a drawdown shutdown you've investigated
 ```
 
-## 9. Going live
+## 9. Going live (only if the gate passes)
 
-Not until the gate passes. See the README's "Paper → live gate". It is
-checked from the database, not by hand, and it also requires
-`JURISDICTION_CLEARED=true`, which only you can set after confirming
-eligibility in the Polymarket US app for where you live.
+```bash
+edgebot run --live --confirm-live --once   # prints every gate check, then exits
+```
+
+The gate is computed from the database: 300+ settled paper bets over 6+
+weeks this season, CLV with a CI above zero, log loss better than the market,
+positive ROI, and drawdown under 15%. On top of that, only you can set these:
+
+1. Confirm eligibility in the Polymarket US app for where you live, then set
+   `JURISDICTION_CLEARED=true`. Washington's regulator considers participation
+   unauthorized (see [phase-0-verification.md](phase-0-verification.md)).
+2. Use a dedicated Polymarket US account funded with the trading bankroll only.
+   Create an API key at polymarket.us/developer and put it in `.env`.
+3. Set `LIVE_BANKROLL_CAP` (dollars) and `LIVE_TRADING=true`.
+4. Leave `LIVE_ALLOW_SHORT=false` until you've previewed a one-contract
+   `ORDER_INTENT_BUY_SHORT` order and confirmed its price is on the NO scale.
+   Until then edgebot only takes long-side positions.
+
+Then run `edgebot run --live --confirm-live` in place of the paper command.
+`edgebot report --mode live` reports live results separately.

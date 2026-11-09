@@ -230,3 +230,29 @@ def test_news_runs_for_teams_in_window_and_triggers_reevaluation(env):
     # not normally due again for 30 minutes, but new news forces a re-evaluation
     clock["now"] = NOW + timedelta(minutes=5)
     assert runner.cycle().evaluated == 1
+
+
+def test_unknown_order_outcome_counts_as_exposure(env):
+    from edgebot.trading.executor import ExecutionResult
+
+    store, runner, clock, _ = env
+
+    class UnknownExecutor:
+        mode = "live"
+
+        def submit(self, req):
+            return ExecutionResult(order_id=99, status="unknown")
+
+        def cancel_all(self):
+            return 0
+
+    runner.executor = UnknownExecutor()
+    runner.cycle()
+    assert runner.risk.state.open_exposure > 0
+    assert store.query("SELECT kind FROM risk_events")[0]["kind"] == "order_unknown"
+    clock["now"] = NOW + timedelta(minutes=31)
+    runner.cycle()  # the game is treated as having a position
+    last = store.query("SELECT reasons_json FROM decisions ORDER BY id DESC LIMIT 1")[0][0]
+    assert "one correlated position" in last
+    # risk state is saved under the executor's mode
+    assert {r[0] for r in store.query("SELECT mode FROM risk_states")} == {"live"}
