@@ -5,9 +5,9 @@
 | Name                                   |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/edgebot/\_\_init\_\_.py            |        1 |        0 |        0 |        0 |    100% |           |
-| src/edgebot/cli.py                     |      105 |       23 |        6 |        1 |     75% |35-41, 45-49, 53-57, 86-96, 179 |
+| src/edgebot/cli.py                     |      157 |       28 |       12 |        4 |     79% |36-42, 46-50, 54-58, 87-97, 125, 132-133, 163-164, 261 |
 | src/edgebot/config.py                  |       57 |        1 |       10 |        2 |     96% |57, 106-\>105 |
-| src/edgebot/db.py                      |       78 |        0 |        4 |        0 |    100% |           |
+| src/edgebot/db.py                      |       84 |        2 |        4 |        0 |     98% |   431-432 |
 | src/edgebot/devig.py                   |       44 |        4 |       16 |        3 |     85% |29, 50-\>58, 67-69 |
 | src/edgebot/ingest/\_\_init\_\_.py     |        0 |        0 |        0 |        0 |    100% |           |
 | src/edgebot/ingest/historical\_odds.py |      103 |       18 |       34 |        8 |     75% |71-75, 80, 97, 130, 134-135, 141, 156, 173, 177-182 |
@@ -17,14 +17,18 @@
 | src/edgebot/ingest/odds\_api.py        |       72 |        3 |       18 |        2 |     94% |70, 75-76, 129-\>131 |
 | src/edgebot/ingest/polymarket.py       |      115 |        4 |       30 |        5 |     94% |61, 80, 141, 154, 182-\>178 |
 | src/edgebot/model/\_\_init\_\_.py      |        0 |        0 |        0 |        0 |    100% |           |
+| src/edgebot/model/backtest.py          |      136 |        7 |       46 |        6 |     93% |56, 60-61, 70, 104, 106-111, 226-\>224 |
+| src/edgebot/model/features.py          |      115 |        2 |       16 |        1 |     98% |   74, 122 |
+| src/edgebot/model/game\_model.py       |       85 |        3 |       10 |        0 |     97% |   159-162 |
+| src/edgebot/model/metrics.py           |       31 |        0 |        6 |        0 |    100% |           |
 | src/edgebot/model/minutes.py           |      118 |        2 |       32 |        4 |     96% |105, 121-\>134, 130, 226-\>219 |
-| src/edgebot/model/ratings.py           |       99 |        2 |       32 |        3 |     96% |88-\>87, 126-\>125, 139-140 |
+| src/edgebot/model/ratings.py           |       99 |        0 |       32 |        2 |     98% |88-\>87, 126-\>125 |
 | src/edgebot/model/strength.py          |       54 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/names.py                   |       14 |        0 |        2 |        0 |    100% |           |
 | src/edgebot/ratelimit.py               |       26 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/teams.py                   |       46 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/timeutil.py                |       22 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                              | **1242** |   **92** |  **280** |   **35** | **90%** |           |
+| **TOTAL**                              | **1667** |  **109** |  **364** |   **44** | **91%** |           |
 
 
 ## Setup coverage badge
