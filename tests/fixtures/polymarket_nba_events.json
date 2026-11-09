@@ -1,0 +1,131 @@
+{
+ "events": [
+  {
+   "slug": "nba-lal-atl-2026-11-09",
+   "title": "Los Angeles Lakers vs. Atlanta Hawks",
+   "startTime": "2026-11-10T00:00:00Z",
+   "active": true,
+   "closed": false,
+   "markets": [
+    {
+     "slug": "aec-nba-lal-atl-2026-11-09",
+     "sportsMarketTypeV2": "SPORTS_MARKET_TYPE_MONEYLINE",
+     "feeCoefficient": 0.095,
+     "orderPriceMinTickSize": 0.01,
+     "marketSides": [
+      {
+       "identifier": "aec-nba-lal-atl-2026-11-09",
+       "description": "Los Angeles Lakers",
+       "long": true,
+       "team": {
+        "id": 35,
+        "name": "Los Angeles Lakers",
+        "abbreviation": "lal",
+        "league": "nba",
+        "ordering": "away"
+       }
+      },
+      {
+       "identifier": "aec-nba-lal-atl-2026-11-09",
+       "description": "Atlanta Hawks",
+       "long": false,
+       "team": {
+        "id": 24,
+        "name": "Atlanta Hawks",
+        "abbreviation": "atl",
+        "league": "nba",
+        "ordering": "home"
+       }
+      }
+     ]
+    },
+    {
+     "slug": "asc-nba-lal-atl-2026-11-09-pos-1pt5",
+     "sportsMarketTypeV2": "SPORTS_MARKET_TYPE_SPREAD"
+    }
+   ]
+  },
+  {
+   "slug": "nba-no-gs-2026-11-09",
+   "title": "New Orleans Pelicans vs. Golden State Warriors",
+   "startTime": "2026-11-10T03:00:00Z",
+   "active": true,
+   "closed": false,
+   "markets": [
+    {
+     "slug": "aec-nba-no-gs-2026-11-09",
+     "sportsMarketTypeV2": "SPORTS_MARKET_TYPE_MONEYLINE",
+     "feeCoefficient": 0.095,
+     "orderPriceMinTickSize": 0.01,
+     "marketSides": [
+      {
+       "identifier": "aec-nba-no-gs-2026-11-09",
+       "description": "New Orleans Pelicans",
+       "long": false,
+       "team": {
+        "id": 6,
+        "name": "New Orleans Pelicans",
+        "abbreviation": "no",
+        "league": "nba",
+        "ordering": "away"
+       }
+      },
+      {
+       "identifier": "aec-nba-no-gs-2026-11-09",
+       "description": "Golden State Warriors",
+       "long": true,
+       "team": {
+        "id": 43,
+        "name": "Golden State Warriors",
+        "abbreviation": "gs",
+        "league": "nba",
+        "ordering": "home"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "slug": "nba-sa-pho-2026-11-08",
+   "title": "San Antonio Spurs vs. Phoenix Suns",
+   "startTime": "2026-11-10T00:00:00Z",
+   "active": true,
+   "closed": true,
+   "markets": [
+    {
+     "slug": "aec-nba-sa-pho-2026-11-08",
+     "sportsMarketTypeV2": "SPORTS_MARKET_TYPE_MONEYLINE",
+     "feeCoefficient": 0.095,
+     "orderPriceMinTickSize": 0.01,
+     "marketSides": [
+      {
+       "identifier": "aec-nba-sa-pho-2026-11-08",
+       "description": "San Antonio Spurs",
+       "long": true,
+       "team": {
+        "id": 71,
+        "name": "San Antonio Spurs",
+        "abbreviation": "sa",
+        "league": "nba",
+        "ordering": "away"
+       }
+      },
+      {
+       "identifier": "aec-nba-sa-pho-2026-11-08",
+       "description": "Phoenix Suns",
+       "long": false,
+       "team": {
+        "id": 42,
+        "name": "Phoenix Suns",
+        "abbreviation": "pho",
+        "league": "nba",
+        "ordering": "home"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
