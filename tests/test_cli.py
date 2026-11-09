@@ -128,7 +128,7 @@ def test_live_is_blocked_by_the_gate_on_a_fresh_install(env, capsys):
     assert main(["run", "--live", "--confirm-live"]) == 3
     out = capsys.readouterr().out
     assert "live trading: BLOCKED" in out
-    assert "[FAIL] paper bets" in out and "[FAIL] JURISDICTION_CLEARED=true" in out
+    assert "[FAIL] paper bets" in out and "[FAIL] LIVE_TRADING=true" in out
 
 
 def test_report_prints_and_exports(env, capsys):

@@ -1,7 +1,7 @@
 """Live trading: LiveExecutor and the gated entry point.
 
 ``run_live`` refuses to start unless ``gate.evaluate_gate`` passes: the paper
-track record from the database plus LIVE_TRADING=true, JURISDICTION_CLEARED=true,
+track record from the database plus LIVE_TRADING=true,
 --confirm-live, a live bankroll cap and Polymarket keys.
 
 Every live order:

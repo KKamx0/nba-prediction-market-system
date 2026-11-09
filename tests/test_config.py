@@ -15,21 +15,19 @@ def test_secret_never_prints_its_value():
 def test_settings_from_env_reads_flags_and_masks(monkeypatch, tmp_path):
     monkeypatch.setenv("ODDS_API_KEY", "placeholder-value")
     monkeypatch.setenv("LIVE_TRADING", "true")
-    monkeypatch.delenv("JURISDICTION_CLEARED", raising=False)
     monkeypatch.setenv("EDGEBOT_DB_PATH", str(tmp_path / "x.db"))
     s = Settings.from_env(dotenv_path=None)
     assert s.live_trading is True
-    assert s.jurisdiction_cleared is False
     assert s.odds_api_key.get() == "placeholder-value"
     assert "placeholder-value" not in repr(s)
     assert s.db_path == tmp_path / "x.db"
 
 
 def test_live_trading_defaults_off(monkeypatch):
-    for name in ("LIVE_TRADING", "JURISDICTION_CLEARED"):
+    for name in ("LIVE_TRADING",):
         monkeypatch.delenv(name, raising=False)
     s = Settings.from_env(dotenv_path=None)
-    assert not s.live_trading and not s.jurisdiction_cleared
+    assert not s.live_trading
 
 
 def test_redacting_filter_masks_secrets_in_messages_and_args():

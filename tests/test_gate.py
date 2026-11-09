@@ -6,7 +6,7 @@ LiveExecutor refuses to run unless ALL hold, checked from the database:
   * model log loss better than the market-only baseline
   * positive ROI after fees
   * max paper drawdown < 15%
-plus LIVE_TRADING=true, JURISDICTION_CLEARED=true, --confirm-live, a live
+plus LIVE_TRADING=true, --confirm-live, a live
 bankroll cap, and Polymarket API keys.
 """
 
@@ -25,7 +25,6 @@ NOW = datetime(2027, 1, 20, 12, 0, tzinfo=UTC)
 def _ready_settings(**kw):
     base = dict(
         live_trading=True,
-        jurisdiction_cleared=True,
         live_bankroll_cap=250.0,
         polymarket_key_id=Secret("key-id"),
         polymarket_secret_key=Secret("secret"),
@@ -126,7 +125,6 @@ def test_only_current_season_bets_count(store):
     "settings_kw,confirm,failing",
     [
         ({"live_trading": False}, True, "LIVE_TRADING=true"),
-        ({"jurisdiction_cleared": False}, True, "JURISDICTION_CLEARED=true"),
         ({}, False, "--confirm-live"),
         ({"live_bankroll_cap": 0.0}, True, "live bankroll cap"),
         ({"polymarket_secret_key": Secret("")}, True, "polymarket api keys"),

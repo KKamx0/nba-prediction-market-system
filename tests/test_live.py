@@ -143,7 +143,7 @@ def test_cancel_all_and_buying_power():
 
 
 def test_run_live_refuses_when_gate_fails(store, capsys):
-    settings = Settings(live_trading=True, jurisdiction_cleared=True, live_bankroll_cap=100,
+    settings = Settings(live_trading=True, live_bankroll_cap=100,
                         polymarket_key_id=Secret("k"), polymarket_secret_key=Secret("s"))  # fmt: skip
     client = _client()
     rc = run_live(
