@@ -18,8 +18,10 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from edgebot.devig import consensus_home_prob
+from edgebot.learning.minutes_bias import minutes_bias_as_of
 from edgebot.model.minutes import MinutesModel
 from edgebot.model.strength import RatingsBook, rosters_as_of, statuses_for, team_tonight
+from edgebot.names import name_key
 from edgebot.news import news_adjustments_as_of
 from edgebot.teams import TEAMS, travel_km
 from edgebot.timeutil import utc_now
@@ -93,6 +95,15 @@ def _tz_offset_hours(abbr: str, when: datetime) -> float:
     return off.total_seconds() / 3600 if off else 0.0
 
 
+def _sum_by_player(*deltas: dict[str, float]) -> dict[str, float]:
+    """Add minutes adjustments from several sources, matching names across spellings."""
+    out: dict[str, float] = defaultdict(float)
+    for d in deltas:
+        for name, v in d.items():
+            out[name_key(name)] += v
+    return dict(out)
+
+
 def logit(p: float) -> float:
     p = min(max(p, 1e-6), 1 - 1e-6)
     return math.log(p / (1 - p))
@@ -106,6 +117,7 @@ class FeatureBuilder:
         self.book = RatingsBook(store)
         self.minutes_model = minutes_model or MinutesModel()
         self._cache_key: tuple[date, datetime] | None = None
+        self.last_minutes: dict = {}  # team -> TeamMinutes from the latest build()
         self._ctx: tuple | None = None
 
     def _context(self, game_day: date, as_of: datetime):
@@ -134,7 +146,9 @@ class FeatureBuilder:
                     )
             for t in logs:
                 logs[t] = sorted((g for g in logs[t] if g.day < game_day), key=lambda g: g.day)
-            self._cache_key, self._ctx = key, (ratings, rosters, logs)
+            # per-player corrections learned from our own past projection errors (as of now)
+            bias = minutes_bias_as_of(self.store, as_of)
+            self._cache_key, self._ctx = key, (ratings, rosters, logs, bias)
         return self._ctx
 
     def build(
@@ -148,7 +162,7 @@ class FeatureBuilder:
         save: bool = True,
     ) -> GameFeatures:
         game_day = date.fromisoformat(game_date)
-        ratings, rosters, logs = self._context(game_day, as_of)
+        ratings, rosters, logs, learned_bias = self._context(game_day, as_of)
 
         def recent(team: str) -> list[_TeamGame]:
             return [g for g in logs.get(team, []) if g.day < game_day]
@@ -185,9 +199,10 @@ class FeatureBuilder:
                 {**news.statuses, **official},
                 back_to_back=rest(team) <= 1,
                 minutes_model=self.minutes_model,
-                minutes_delta={**news.minutes_delta, **(minutes_delta or {})},
+                minutes_delta=_sum_by_player(learned_bias, news.minutes_delta, minutes_delta or {}),
             )
         h, a = sides[home], sides[away]
+        self.last_minutes = {home: h.minutes, away: a.minutes}
 
         quotes = self.store.odds_as_of(game_date=game_date, home=home, away=away, as_of=as_of)
         market = consensus_home_prob((q["home_dec"], q["away_dec"]) for q in quotes)
