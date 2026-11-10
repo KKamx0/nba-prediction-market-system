@@ -39,8 +39,13 @@ def build_dataset(
     store,
     seasons: Iterable[str] | None = None,
     progress: Callable[[str], None] | None = None,
+    exclude_game_ids: set[str] | None = None,
 ) -> pd.DataFrame:
-    """Feature rows for every completed game (optionally limited to ``seasons``)."""
+    """Feature rows for every completed game (optionally limited to ``seasons``).
+
+    ``exclude_game_ids`` skips games already in a cached dataset, so the dataset
+    can be extended incrementally as new results come in.
+    """
     games = store.query("""
         SELECT g.game_id, g.season, g.game_date, g.tip_utc, g.home, g.away,
                r.home_pts, r.away_pts
@@ -53,6 +58,8 @@ def build_dataset(
     current_day = None
     for g in games:
         if wanted and g["season"] not in wanted:
+            continue
+        if exclude_game_ids and g["game_id"] in exclude_game_ids:
             continue
         game_day = date.fromisoformat(g["game_date"])
         as_of = et_date_to_utc(game_day, DECISION_TIME_ET)
