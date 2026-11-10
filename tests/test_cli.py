@@ -142,3 +142,13 @@ def test_report_prints_and_exports(env, capsys):
 def test_doctor_exits_nonzero_until_ready(env, capsys):
     assert main(["doctor"]) == 1
     assert "blocking problem" in capsys.readouterr().out
+
+
+def test_learn_command_and_report_section(env, capsys):
+    assert main(["learn"]) == 0
+    assert "what edgebot has learned" in capsys.readouterr().out
+    assert main(["learn", "--retrain"]) == 0
+    assert "kept current model" in capsys.readouterr().out  # nothing trained yet
+    out = env / "docs" / "results.md"
+    main(["report", "--export", str(out)])
+    assert "## What it has learned" in out.read_text()

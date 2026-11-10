@@ -166,26 +166,64 @@ def cmd_train(args: argparse.Namespace, settings: Settings, store: Store) -> int
     df = pd.read_csv(cache, dtype={"game_id": str})
     df = df[df["market_logit"].notna()].sort_values(["game_date", "game_id"])
     choice = settings.db_path.parent / "model_choice.json"
-    name = args.model or json.loads(choice.read_text())["model"]
+    meta = json.loads(choice.read_text()) if choice.exists() else {}
+    name = args.model or meta["model"]
     model = default_models()[name]().fit(df, df["y"].to_numpy())
     path = Path("models") / "game_model.pkl"
     save_model(model, path)
-    print(f"trained {name} on {len(df)} games -> {path}")
+    # train_end lets weekly retraining measure the model on games it never saw
+    meta.update(model=name, train_end=str(df["game_date"].max()))
+    choice.write_text(json.dumps(meta))
+    print(f"trained {name} on {len(df)} games (through {meta['train_end']}) -> {path}")
+    return 0
+
+
+def _retrain(settings: Settings, store: Store):
+    """Weekly champion/challenger check; returns (promoted, new model or None)."""
+    from edgebot.learning.retrain import retrain_if_better
+    from edgebot.model.game_model import load_model
+
+    model_path = Path("models") / "game_model.pkl"
+    r = retrain_if_better(
+        store,
+        cache_path=settings.db_path.parent / "backtest_dataset.csv",
+        model_path=model_path,
+        choice_path=settings.db_path.parent / "model_choice.json",
+        now=utc_now(),
+    )
+    log.info("retraining: %s", r.reason)
+    return r.promoted, (load_model(model_path) if r.promoted else None)
+
+
+def cmd_learn(args: argparse.Namespace, settings: Settings, store: Store) -> int:
+    from edgebot.learning import summary as learned
+    from edgebot.learning.postmortem import review_settled
+
+    review_settled(store, utc_now())
+    if args.retrain:
+        promoted, _ = _retrain(settings, store)
+        last = store.query("SELECT reason FROM model_versions ORDER BY id DESC LIMIT 1")
+        print(("promoted: " if promoted else "kept current model: ") + (last[0][0] if last else ""))
+    print(learned.to_text(store, utc_now(), args.mode))
     return 0
 
 
 def cmd_report(args: argparse.Namespace, settings: Settings, store: Store) -> int:
     from edgebot import report
+    from edgebot.learning import summary as learned
 
     s = report.compute(store, mode=args.mode, starting_bankroll=settings.paper_bankroll)
-    text = report.to_text(s)
+    text = report.to_text(s) + "\n\n" + learned.to_text(store, utc_now(), args.mode)
     print(text)
     if args.export:
         out = Path(args.export)
         plot = out.parent / "results_calibration.png"
         has_plot = report.calibration_png(store, plot)
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(report.to_markdown(s, plot.name if has_plot else None))
+        out.write_text(
+            report.to_markdown(s, plot.name if has_plot else None)
+            + learned.to_markdown(store, utc_now(), args.mode)
+        )
         print(f"exported {out}")
     if args.send:
         if not settings.discord_webhook_url:
@@ -252,8 +290,11 @@ def build_runner(settings: Settings, store: Store, *, executor=None, risk=None):
         from edgebot import report
 
         def daily_report() -> None:
+            from edgebot.learning import summary as learned
+
             s = report.compute(store, starting_bankroll=settings.paper_bankroll)
-            report.send_discord(settings.discord_webhook_url.get(), report.to_text(s))
+            text = report.to_text(s) + "\n\n" + learned.to_text(store, utc_now())
+            report.send_discord(settings.discord_webhook_url.get(), text)
 
     news = None
     if settings.anthropic_api_key:
@@ -284,6 +325,7 @@ def build_runner(settings: Settings, store: Store, *, executor=None, risk=None):
         ),
         daily_report=daily_report,
         news=news,
+        retrain=lambda: _retrain(settings, store),
     )
 
 
@@ -415,6 +457,11 @@ def build_parser() -> argparse.ArgumentParser:
     doc = sub.add_parser("doctor", help="check data, model, keys, and connectivity")
     doc.add_argument("--network", action="store_true", help="also probe the data sources")
     doc.set_defaults(fn=cmd_doctor)
+
+    lrn = sub.add_parser("learn", help="what the bot has learned from its own bets")
+    lrn.add_argument("--mode", choices=["paper", "live"], default="paper")
+    lrn.add_argument("--retrain", action="store_true", help="run the retraining check now")
+    lrn.set_defaults(fn=cmd_learn)
 
     rep = sub.add_parser("report", help="P&L, CLV, calibration vs market, drawdown")
     rep.add_argument("--mode", choices=["paper", "live"], default="paper")

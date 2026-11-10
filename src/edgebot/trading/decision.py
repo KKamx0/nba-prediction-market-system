@@ -21,7 +21,8 @@ or block the bet.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass, field, replace
 
 from edgebot.ingest.polymarket import Moneyline, OrderBook
 from edgebot.trading.edge import EdgeConfig, EdgeQuote, max_qty_with_edge, quote_side
@@ -79,7 +80,10 @@ def decide(
     theta: float,
     edge_cfg: EdgeConfig | None = None,
     sizing_cfg: SizingConfig | None = None,
+    min_edge_for: Callable[[str, float], tuple[float | None, list[str]]] | None = None,
 ) -> Decision:
+    """``min_edge_for(side_team, side_price) -> (min_edge or None to skip, notes)``
+    lets learned segment rules set a per-side edge requirement."""
     ecfg = edge_cfg or EdgeConfig()
     m, book = view.market, view.book
     if not book.is_open:
@@ -117,14 +121,35 @@ def decide(
         ]
         return d
 
+    thresholds: dict[str, tuple[float | None, list[str]]] = {}
     for s in sides:
         s.quote = quote_side(s.p_side, book.asks_for(s.long_side)[:1], 1.0, theta, ecfg)
-    best = max(sides, key=lambda s: s.quote.edge if s.quote else -1)
+        thresholds[s.side_team] = (
+            min_edge_for(s.side_team, s.quote.vwap if s.quote else s.market_mid)
+            if min_edge_for
+            else (ecfg.min_edge, [])
+        )
+
+    def margin(s: Decision) -> float:
+        need = thresholds[s.side_team][0]
+        return -1.0 if s.quote is None or need is None else s.quote.edge - need
+
+    best = max(sides, key=margin)
     if best.quote is None:
         return Decision("pass", ["no asks on either side"])
-    if best.quote.edge < ecfg.min_edge:
+    need, learned_notes = thresholds[best.side_team]
+    if need is None:
         best.action, best.reasons = "pass", [
-            f"best edge {best.quote.edge:.1%} on {best.side_team} below {ecfg.min_edge:.0%}"
+            f"skipping {best.side_team}: {'; '.join(learned_notes)}"
+        ]
+        return best
+    ecfg = replace(ecfg, min_edge=need)
+    if best.quote.edge < ecfg.min_edge:
+        skipped = [n for t, (thr, notes) in thresholds.items() if thr is None for n in notes]
+        best.action, best.reasons = "pass", [
+            f"best edge {best.quote.edge:.1%} on {best.side_team} below {ecfg.min_edge:.1%}",
+            *learned_notes,
+            *(f"other side skipped: {n}" for n in skipped),
         ]
         return best
 
@@ -171,6 +196,7 @@ def decide(
     best.action = "bet"
     best.reasons = [
         f"edge {quote.edge:.1%} on {best.side_team} at {quote.vwap:.3f} "
-        f"(+{quote.fee_per_contract:.3f} fee), {qty:g} contracts"
+        f"(+{quote.fee_per_contract:.3f} fee), {qty:g} contracts",
+        *learned_notes,
     ]
     return best

@@ -130,6 +130,25 @@ connection.
 - Optional: without `ANTHROPIC_API_KEY` the loop runs on the official injury
   report alone.
 
+## How it learns from itself
+
+`edgebot learn` shows what it has learned. The loop updates all of this by
+itself.
+
+| What | Learned from | Changes |
+| - | - | - |
+| **Post-mortem** per settled bet | CLV, result, projected vs actual minutes | Verdict: good bet won / good bet lost (variance) / lucky win / bad bet / beaten by the market / availability miss (names the player) |
+| **Segment rules**: team, opponent, home/away, favorite/underdog, weekday, back-to-back | CLV of past bets in that segment | The minimum edge for that kind of bet: skip it, require 1.5x, or ease to 0.85x (never below 3%) |
+| **Player minutes corrections** | Every projection logged at decision time vs the box score | An additive correction (±6 min max) in future projections, e.g. a vet who's rested more than his averages say |
+| **Weekly retraining** | New results since the model was trained | Swaps in a retrained model only if walk-forward retraining would have predicted those new games better |
+
+Guardrails: learning uses closing line value, not wins and losses, because a
+hot streak on one team is mostly luck. Every pattern is shrunk toward "no
+effect" (30 pseudo-bets) and needs 20+ real bets and a 90% interval clear of
+zero before it acts. Learned rules only move the minimum edge; probabilities,
+the 15-point disagreement cap, sizing caps and risk limits are untouched.
+Everything is as-of safe, and the leakage test covers the learned inputs.
+
 ## How team strength is built
 
 1. **Player ratings** (`model/ratings.py`): offensive and defensive impact

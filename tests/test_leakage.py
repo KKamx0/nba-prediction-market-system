@@ -111,6 +111,19 @@ def _corrupt_the_future(store, games):
                     " VALUES (?, ?, ?, ?, ?, 'out', -40, 0.99, 'test')",
                     (to_iso(late), url, to_iso(late), n, home),
                 )
+        # late minutes projections that would teach a huge per-player bias
+        with store.conn:
+            for pid in [
+                r["player_id"]
+                for r in store.query(
+                    "SELECT DISTINCT player_id FROM player_games WHERE team = ? LIMIT 5", (home,)
+                )
+            ]:
+                store.conn.execute(
+                    "INSERT INTO minutes_projections (known_at, game_date, team, player_id,"
+                    " player_name, projected, status) VALUES (?, ?, ?, ?, 'x', 48, NULL)",
+                    (to_iso(late), gd, home, pid),
+                )
         # late odds moving the line to a near-lock
         store.insert_odds_quotes(
             [

@@ -281,6 +281,56 @@ MIGRATIONS: list[str] = [
         SELECT 'paper', state_json, updated_at FROM risk_state;
     DROP TABLE risk_state;
     """,
+    # 7: self-learning: what we projected, how each bet went, what was learned
+    """
+    CREATE TABLE minutes_projections (
+        id           INTEGER PRIMARY KEY,
+        known_at     TEXT NOT NULL,             -- decision time the projection was made
+        game_date    TEXT NOT NULL,
+        team         TEXT NOT NULL,
+        player_id    INTEGER NOT NULL,
+        player_name  TEXT NOT NULL,
+        projected    REAL NOT NULL CHECK (projected >= 0 AND projected <= 48),
+        status       TEXT,
+        UNIQUE (game_date, team, player_id, known_at)
+    );
+    CREATE INDEX minutes_projections_game ON minutes_projections (game_date, team);
+
+    CREATE TABLE bet_reviews (
+        position_id  INTEGER PRIMARY KEY REFERENCES positions (id),
+        known_at     TEXT NOT NULL,
+        verdict      TEXT NOT NULL,
+        clv          REAL,
+        surprises    TEXT NOT NULL,             -- JSON list of availability misses
+        notes        TEXT NOT NULL
+    );
+
+    CREATE TABLE learned_rules (
+        id         INTEGER PRIMARY KEY,
+        known_at   TEXT NOT NULL,
+        kind       TEXT NOT NULL,               -- 'segment' | 'minutes_bias'
+        dimension  TEXT NOT NULL,
+        value      TEXT NOT NULL,
+        n          INTEGER NOT NULL,
+        estimate   REAL NOT NULL,
+        lower      REAL,
+        upper      REAL,
+        action     TEXT NOT NULL
+    );
+    CREATE INDEX learned_rules_time ON learned_rules (kind, known_at);
+
+    CREATE TABLE model_versions (
+        id                 INTEGER PRIMARY KEY,
+        known_at           TEXT NOT NULL,
+        model              TEXT NOT NULL,
+        train_end          TEXT NOT NULL,
+        n_evaluated        INTEGER NOT NULL,
+        champion_log_loss  REAL,
+        challenger_log_loss REAL,
+        promoted           INTEGER NOT NULL,
+        reason             TEXT NOT NULL
+    );
+    """,
 ]
 
 

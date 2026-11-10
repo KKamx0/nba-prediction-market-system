@@ -5,8 +5,10 @@ import pytest
 
 from edgebot.db import Store
 from edgebot.ingest.polymarket import Level, Moneyline, OrderBook
+from edgebot.learning.segments import SegmentPolicy
 from edgebot.model.features import MODEL_FEATURES
 from edgebot.runner import KillSwitchError, Runner, RunnerConfig, game_key, predict_scenarios
+from edgebot.timeutil import ET
 from edgebot.trading.executor import PaperExecutor
 from edgebot.trading.risk import RiskEngine, RiskLimits
 from edgebot.trading.state import load_risk_state
@@ -256,3 +258,47 @@ def test_unknown_order_outcome_counts_as_exposure(env):
     assert "one correlated position" in last
     # risk state is saved under the executor's mode
     assert {r[0] for r in store.query("SELECT mode FROM risk_states")} == {"live"}
+
+
+def test_cycle_logs_minutes_projections_and_reviews_settled_bets(env):
+    store, runner, clock, _ = env
+    runner.cycle()
+    teams = {r[0] for r in store.query("SELECT DISTINCT team FROM minutes_projections")}
+    assert teams == {"BOS", "LAL"}
+    (pos,) = store.query("SELECT * FROM positions")
+    store.upsert_game(game_id="0099900002", season="2025-26", game_date="2025-12-05", home="BOS",
+                      away="LAL", known_at=NOW - timedelta(days=10))  # fmt: skip
+    known = datetime(2025, 12, 6, 8, 0, tzinfo=UTC)
+    store.upsert_result(game_id="0099900002", home_pts=99, away_pts=104, known_at=known)
+    clock["now"] = known
+    runner.cycle()
+    (review,) = store.query("SELECT * FROM bet_reviews")
+    assert review["position_id"] == pos["id"] and review["verdict"]
+    # the new day's segment refresh saw the one settled bet: one row per dimension
+    assert store.query("SELECT COUNT(*) FROM learned_rules")[0][0] == 6
+
+
+def test_learned_avoid_rule_turns_a_bet_into_a_pass(env):
+    from edgebot.learning.segments import SegmentStat
+
+    store, runner, _, _ = env
+    runner._policy_day = NOW.astimezone(ET).date()
+    runner.policy = SegmentPolicy(
+        [SegmentStat("team", "BOS", 40, -0.03, -0.02, -0.03, -0.012, -50.0, "avoid", float("inf"))]
+    )
+    r = runner.cycle()
+    assert r.bets == 0
+    (dec,) = store.query("SELECT action, reasons_json FROM decisions")
+    assert dec["action"] == "pass" and "learned avoid team=BOS" in dec["reasons_json"]
+
+
+def test_weekly_retrain_swaps_in_a_promoted_model(env):
+    store, runner, clock, _ = env
+    calls = []
+    new_model = StubModel(bump=0.0)
+    runner.retrain = lambda: calls.append(1) or (True, new_model)
+    clock["now"] = datetime(2025, 12, 8, 11, 0, tzinfo=UTC)  # a Monday after 10:00 UTC
+    runner.cycle()
+    runner.cycle()
+    assert calls == [1] and runner.model is new_model
+    assert "model_promoted" in {r[0] for r in store.query("SELECT kind FROM risk_events")}

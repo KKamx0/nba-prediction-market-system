@@ -29,6 +29,15 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 from edgebot.ingest.polymarket import Moneyline, OrderBook, snapshot_to_store
+from edgebot.learning.minutes_bias import log_projections
+from edgebot.learning.postmortem import review_settled
+from edgebot.learning.segments import (
+    SegmentPolicy,
+    learn_segments,
+    save_snapshot,
+    settled_bets,
+)
+from edgebot.learning.segments import context as segment_context
 from edgebot.model.features import FeatureBuilder, GameFeatures
 from edgebot.timeutil import ET, to_iso, utc_now
 from edgebot.trading.decision import Decision, GameView, decide
@@ -96,6 +105,7 @@ class Runner:
         results: Callable[[], object] | None = None,
         daily_report: Callable[[], object] | None = None,
         news: Callable[[set[str], dict[str, set[str]]], int] | None = None,
+        retrain: Callable[[], tuple[bool, object]] | None = None,
         config: RunnerConfig | None = None,
         clock: Callable[[], datetime] = utc_now,
     ) -> None:
@@ -106,6 +116,11 @@ class Runner:
         self.daily_report = daily_report
         self.news = news
         self._report_day = None
+        # self-learning: segment rules refreshed daily, retraining checked weekly
+        self.retrain = retrain
+        self._retrain_week = None
+        self._policy_day = None
+        self.policy = SegmentPolicy([])
         self.cfg = config or RunnerConfig()
         self.clock = clock
         self.builder = FeatureBuilder(store)
@@ -169,9 +184,37 @@ class Runner:
         }
         return self.news(teams, rosters)
 
+    # -- self-learning -----------------------------------------------------
+    def _learn(self, now: datetime, report: CycleReport) -> None:
+        """Review newly settled bets; refresh segment rules daily; retrain weekly."""
+        self._safe("post-mortems", lambda: review_settled(self.store, now), report)
+        today = now.astimezone(ET).date()
+        if self._policy_day != today:
+
+            def refresh() -> int:
+                stats = learn_segments(settled_bets(self.store, now, self.executor.mode))
+                self.policy = SegmentPolicy(stats)
+                save_snapshot(self.store, stats, now)
+                return len(self.policy.active)
+
+            if self._safe("segment learning", refresh, report) is not None:
+                self._policy_day = today
+        week = now.isocalendar()[:2]
+        if self.retrain and now.weekday() == 0 and now.hour >= 10 and self._retrain_week != week:
+            result = self._safe("retraining", self.retrain, report)
+            if result is not None:
+                self._retrain_week = week
+                promoted, model = result
+                if promoted and model is not None:
+                    self.model = model
+                    log_risk_event(self.store, "model_promoted", self.model_name, now)
+
     # -- one game ----------------------------------------------------------
     def evaluate(self, ml: Moneyline, book: OrderBook, now: datetime) -> Decision:
         f = self.builder.build(game_date=ml.game_date_et, home=ml.home, away=ml.away, as_of=now)
+        # remember what we projected for every player, so the errors can be learned from
+        for team, tm in self.builder.last_minutes.items():
+            log_projections(self.store, ml.game_date_et, team, tm, now)
         if f.market_logit is None:
             d = Decision("pass", ["no sportsbook line known yet; the model needs its market prior"])
             self._record_decision(ml, d, now)
@@ -199,12 +242,25 @@ class Runner:
             p_home_sportsbook=f.market_prob,
         )
         theta = ml.fee_coefficient or self.cfg.default_theta
+
+        def min_edge_for(side_team: str, price: float) -> tuple[float | None, list[str]]:
+            ctx = segment_context(
+                side_team=side_team,
+                home=ml.home,
+                away=ml.away,
+                game_date=ml.game_date_et,
+                price=price,
+                back_to_back=bool(f.home_b2b if side_team == ml.home else f.away_b2b),
+            )
+            return self.policy.threshold(ctx, self.cfg.edge.min_edge)
+
         d = decide(
             view,
             bankroll=self.risk.state.bankroll,
             theta=theta,
             edge_cfg=self.cfg.edge,
             sizing_cfg=self.cfg.sizing,
+            min_edge_for=min_edge_for,
         )
         key = game_key(ml.game_date_et, ml.home, ml.away)
         if d.action == "bet":
@@ -280,6 +336,7 @@ class Runner:
         )
         report.settled = len(settled or [])
         was_shutdown = self.risk.state.shutdown
+        self._learn(now, report)
 
         new_injuries = self._safe("injuries", self.injuries, report) if self.injuries else 0
         odds_due = self.odds is not None and (
