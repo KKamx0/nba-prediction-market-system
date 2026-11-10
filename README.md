@@ -5,7 +5,7 @@
 | Name                                   |    Stmts |     Miss |   Branch |   BrPart |   Cover |   Missing |
 |--------------------------------------- | -------: | -------: | -------: | -------: | ------: | --------: |
 | src/edgebot/\_\_init\_\_.py            |        1 |        0 |        0 |        0 |    100% |           |
-| src/edgebot/cli.py                     |      291 |       66 |       38 |        8 |     74% |37-43, 47-51, 55-59, 88-98, 126, 133-134, 164-165, 194-195, 206-207, 240-273, 296-304, 329-330, 456 |
+| src/edgebot/cli.py                     |      318 |       68 |       40 |        8 |     75% |37-43, 47-51, 55-59, 88-98, 126, 133-134, 164-165, 232-233, 244-245, 278-314, 338-346, 371-372, 503 |
 | src/edgebot/config.py                  |       59 |        1 |       10 |        2 |     96% |59, 110-\>109 |
 | src/edgebot/db.py                      |       84 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/devig.py                   |       44 |        4 |       16 |        3 |     85% |29, 50-\>58, 67-69 |
@@ -18,10 +18,16 @@
 | src/edgebot/ingest/nba\_stats.py       |      131 |       13 |       40 |        4 |     88% |40-47, 84, 111-112, 116-117, 240 |
 | src/edgebot/ingest/odds\_api.py        |       72 |        3 |       18 |        2 |     94% |70, 75-76, 129-\>131 |
 | src/edgebot/ingest/polymarket.py       |      115 |        4 |       30 |        5 |     94% |61, 80, 141, 154, 182-\>178 |
+| src/edgebot/learning/\_\_init\_\_.py   |        0 |        0 |        0 |        0 |    100% |           |
+| src/edgebot/learning/minutes\_bias.py  |       34 |        0 |        6 |        0 |    100% |           |
+| src/edgebot/learning/postmortem.py     |       47 |        1 |       18 |        1 |     97% |        58 |
+| src/edgebot/learning/retrain.py        |       76 |       11 |       18 |        4 |     82% |44-51, 78-\>84, 116, 120, 129 |
+| src/edgebot/learning/segments.py       |       92 |        0 |       20 |        0 |    100% |           |
+| src/edgebot/learning/summary.py        |       47 |        4 |       12 |        2 |     90% |64-65, 70-71 |
 | src/edgebot/model/\_\_init\_\_.py      |        0 |        0 |        0 |        0 |    100% |           |
-| src/edgebot/model/backtest.py          |      136 |        7 |       46 |        6 |     93% |56, 60-61, 70, 104, 106-111, 226-\>224 |
-| src/edgebot/model/features.py          |      118 |        1 |       16 |        1 |     99% |       123 |
-| src/edgebot/model/game\_model.py       |       85 |        3 |       10 |        0 |     97% |   159-162 |
+| src/edgebot/model/backtest.py          |      138 |        8 |       48 |        7 |     92% |61, 63, 67-68, 77, 111, 113-118, 233-\>231 |
+| src/edgebot/model/features.py          |      129 |        1 |       20 |        1 |     99% |       135 |
+| src/edgebot/model/game\_model.py       |       85 |        0 |       10 |        0 |    100% |           |
 | src/edgebot/model/metrics.py           |       31 |        0 |        6 |        0 |    100% |           |
 | src/edgebot/model/minutes.py           |      120 |        2 |       32 |        4 |     96% |105, 121-\>134, 130, 231-\>224 |
 | src/edgebot/model/ratings.py           |       99 |        0 |       32 |        2 |     98% |88-\>87, 126-\>125 |
@@ -30,11 +36,11 @@
 | src/edgebot/news.py                    |      166 |       10 |       42 |        4 |     93% |206-208, 238, 256, 336-340, 346 |
 | src/edgebot/ratelimit.py               |       26 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/report.py                  |      119 |       18 |       22 |        3 |     84% |81-\>78, 189-207, 236 |
-| src/edgebot/runner.py                  |      181 |       11 |       44 |        6 |     92% |210-\>222, 215-221, 242-\>251, 289, 309, 334, 342, 349 |
+| src/edgebot/runner.py                  |      215 |       11 |       56 |        8 |     92% |200-\>202, 205-\>exit, 208-\>exit, 271-277, 298-\>307, 346, 366, 391, 399, 406 |
 | src/edgebot/teams.py                   |       46 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/timeutil.py                |       22 |        0 |        2 |        0 |    100% |           |
 | src/edgebot/trading/\_\_init\_\_.py    |        0 |        0 |        0 |        0 |    100% |           |
-| src/edgebot/trading/decision.py        |      100 |        8 |       30 |        6 |     89% |67, 109, 124, 159-\>165, 163-164, 166-168 |
+| src/edgebot/trading/decision.py        |      112 |       10 |       32 |        7 |     88% |68, 113, 139, 142-145, 184-\>190, 188-189, 191-193 |
 | src/edgebot/trading/edge.py            |       66 |        0 |       12 |        0 |    100% |           |
 | src/edgebot/trading/executor.py        |       64 |        0 |        4 |        0 |    100% |           |
 | src/edgebot/trading/live.py            |       91 |       17 |       18 |        1 |     78% |   146-174 |
@@ -42,7 +48,7 @@
 | src/edgebot/trading/settlement.py      |       27 |        1 |        8 |        1 |     94% |        18 |
 | src/edgebot/trading/sizing.py          |       18 |        1 |        4 |        1 |     91% |        29 |
 | src/edgebot/trading/state.py           |       18 |        0 |        2 |        0 |    100% |           |
-| **TOTAL**                              | **2880** |  **210** |  **614** |   **71** | **91%** |           |
+| **TOTAL**                              | **3262** |  **228** |  **710** |   **82** | **91%** |           |
 
 
 ## Setup coverage badge
