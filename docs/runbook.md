@@ -109,6 +109,9 @@ restarts: risk state, positions, and the drawdown shutdown all live in SQLite.
 ## 7. Daily routine (about 2 minutes)
 
 - `edgebot report`: check CLV first. Over hundreds of bets, ROI is mostly noise.
+- `edgebot learn`: post-mortems, any rules it has picked up, and player minutes
+  corrections. Expect "no rules yet" for the first several weeks: that's the
+  guardrails working, not a bug.
 - Look at games flagged `review` (model vs market > 15 points). Usually it's
   stale data or a missed injury. That's the point of the flag.
 - Weekly: `edgebot report --export docs/results.md`, review the diff, and
