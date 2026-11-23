@@ -109,7 +109,7 @@ connection.
 ## The LLM news layer
 
 `news.py` sends RSS articles about teams playing soon to Claude
-(`claude-opus-5-5`) with a JSON schema it must follow:
+(`claude-haiku-5-5` by default, set with `EDGEBOT_NEWS_MODEL`) with a JSON schema it must follow:
 
 ```json
 {"player": "...", "team": "...", "status": "out|doubtful|questionable|probable|available|minutes_limit",

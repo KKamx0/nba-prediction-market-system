@@ -6,6 +6,7 @@ import pytest
 
 from edgebot.names import name_key
 from edgebot.news import (
+    MODEL,
     OUTPUT_SCHEMA,
     SYSTEM_PROMPT,
     Article,
@@ -68,7 +69,7 @@ def test_extract_valid_records_and_request_shape():
         ("Dyson Daniels", "ATL", "available"),
     ]
     call = client.calls[0]
-    assert call["model"] == "claude-opus-5-5"
+    assert call["model"] == MODEL
     assert call["output_config"]["format"] == {"type": "json_schema", "schema": OUTPUT_SCHEMA}
     assert "tools" not in call  # the model gets no tools
     assert call["fallbacks"] == "default"

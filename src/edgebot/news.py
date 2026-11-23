@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime
@@ -38,7 +39,9 @@ from edgebot.timeutil import to_iso, utc_now
 
 log = logging.getLogger(__name__)
 
-MODEL = "claude-opus-5-5"
+# Extraction is a narrow reading task, so the cheapest model is enough.
+# Override with EDGEBOT_NEWS_MODEL in .env.
+MODEL = os.environ.get("EDGEBOT_NEWS_MODEL", "").strip() or "claude-haiku-5-5"
 MAX_ARTICLE_CHARS = 20_000  # longer inputs are rejected, never silently truncated
 MIN_CONFIDENCE = 0.6  # records below this are stored but not used
 
